@@ -1,0 +1,44 @@
+name: 📦 Automated Release
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  release:
+    if: ${{ github.event.pull_request.merged }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+      - name: 📦 Package data
+        run: |
+          # Edit this line if you want to include additional files
+          # q stands for quiet, r stands for recursive (to include all files and sub-folders in Config)
+          zip -qr "${{ github.event.repository.name }}.zip" *.dll Config ModInfo.xml README.md CHANGELOG.md LICENSE
+
+          version=$(sed -n '/Version/{s/.*<Version value=\"\(.*\)\"[ ]*\/>.*/\1/;p}' ModInfo.xml)
+          echo "version=$version" >> $GITHUB_ENV
+          prerelease=$([[ $version = 0* ]] && echo "true" || echo "false")
+          echo "prerelease=$prerelease" >> $GITHUB_ENV
+          # echoes for troubleshooting in case you need them
+          # echo "name: ${{ github.event.repository.name }}"
+          # echo "title: ${{ github.event.pull_request.title }}"
+          # echo "version: $version"
+          # echo "prerelease: $prerelease"
+      - name: 📢 Post Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.version }}
+          commit: main
+          name: ${{ github.event.pull_request.title }}
+          body: ${{ github.event.pull_request.body }}
+          generateReleaseNotes: true
+          artifacts: "${{ github.event.repository.name }}.zip"
+          prerelease: ${{ env.prerelease }}
+          # if you'd like to review the generated release before publishing it, enable draft mode
+          # draft: true

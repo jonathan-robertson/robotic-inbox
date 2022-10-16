@@ -1,0 +1,9 @@
+<xml>
+    <ModInfo>
+        <Name value="Storage Network" />
+        <Description value="A collection of networked server-side storage containers." />
+        <Author value="Jonathan Robertson (Kanaverum)" />
+        <Version value="0.1.0" />
+        <Website value="https://github.com/jonathan-robertson/storage-network" />
+    </ModInfo>
+</xml>
