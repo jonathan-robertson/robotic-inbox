@@ -1,0 +1,62 @@
+<config>
+    <append xpath="/blocks">
+        <block name="cntSecureStorageNetworkInbox">
+            <property name="CreativeMode" value="Player" />
+            <property name="Tags" value="door" />
+            <property name="Class" value="SecureLoot" />
+            <property name="CustomIcon" value="poiPartHelper" />
+            <property name="Material" value="Mmetal_weak" />
+            <property name="StabilitySupport" value="true" />
+            <property name="Shape" value="New" />
+            <property name="Texture" value="8,8,540,8,536,8" />
+            <!-- <property name="Mesh" value="models"/> -->
+            <property name="IsTerrainDecoration" value="true" />
+            <!-- <property name="FuelValue" value="300" /> -->
+            <!-- <property name="Model" value="LootContainers/chest01" param1="main_mesh"/> -->
+            <property name="Model" value="poi_part_helper" />
+            <property name="HandleFace" value="Bottom" />
+            <!-- <property name="ImposterExchange" value="imposterQuarter" param1="154"/> -->
+            <property name="ImposterExclude" value="true" />
+            <property name="Collide" value="movement,melee,bullet,arrow,rocket" />
+            <property name="LootList" value="playerStorage" />
+            <property class="RepairItems">
+                <property name="resourceForgedIron" value="10" />
+                <property name="resourceElectronicParts" value="10" />
+            </property>
+            <drop event="Destroy" name="resourceScrapIron" count="10,30" />
+            <drop event="Destroy" name="resourceElectronicParts" count="1,3" />
+            <drop event="Fall" name="scrapMetalPile" count="1" prob="0.75" stick_chance="1" />
+            <property name="LPHardnessScale" value="8" />
+            <property name="DowngradeBlock" value="cntStorageNetworkInbox" />
+            <property name="Group" value="Basics,Building,advBuilding" />
+            <property name="DescriptionKey" value="cntSecureStorageNetworkInboxDesc" />
+            <property name="EconomicValue" value="10" />
+            <property name="EconomicBundleSize" value="10" />
+            <property name="FilterTags" value="MC_playerBlocks,SC_decor" />
+        </block>
+        <block name="cntStorageNetworkInbox">
+            <property name="CreativeMode" value="Player" />
+            <property name="Class" value="Loot" />
+            <property name="CustomIcon" value="poiPartHelper" />
+            <property name="Material" value="Mmetal_weak" />
+            <property name="StabilitySupport" value="true" />
+            <property name="Shape" value="New" />
+            <property name="Texture" value="8,8,540,8,536,8" />
+            <!-- <property name="Mesh" value="models"/> -->
+            <property name="Model" value="poi_part_helper" />
+            <property name="HandleFace" value="Bottom" />
+            <!-- <property name="ImposterExchange" value="imposterQuarter" param1="154"/> -->
+            <property name="ImposterExclude" value="true" />
+            <property name="IsTerrainDecoration" value="true" />
+            <property name="LootList" value="playerStorage" />
+            <property class="RepairItems">
+                <property name="resourceForgedIron" value="10" />
+                <property name="resourceElectronicParts" value="10" />
+            </property>
+            <drop event="Destroy" name="resourceScrapIron" count="10,30" />
+            <drop event="Destroy" name="resourceElectronicParts" count="1,3" />
+            <drop event="Fall" name="scrapMetalPile" count="1" prob="0.75" stick_chance="1" />
+            <property name="FilterTags" value="MC_playerBlocks,SC_decor" />
+        </block>
+    </append>
+</config>

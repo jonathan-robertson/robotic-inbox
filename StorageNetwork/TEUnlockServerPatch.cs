@@ -15,7 +15,7 @@ lootEntityId: {_lootEntityId}");
 
                 var otherPos = _blockPos + Vector3i.up;
                 var target = __instance.World.GetTileEntity(_clrIdx, otherPos);
-                StorageManager.Distribute(__instance.World.GetTileEntity(_clrIdx, _blockPos), __instance.World.GetTileEntity(_clrIdx, otherPos));
+                StorageManager.Distribute(__instance.World.GetTileEntity(_clrIdx, _blockPos), __instance.World.GetTileEntity(_clrIdx, otherPos), _blockPos);
 
                 /*
                 if (tileEntityLootContainer != null) {

@@ -1,0 +1,4 @@
+Key,File,Type,english
+cntSecureStorageNetworkInbox,blocks,Container,"Secure Storage Network Inbox"
+cntSecureStorageNetworkInboxDesc,blocks,Container,"Place this Inbox near other containers in your base. Any items added to this Inbox will be automatically distributed to nearby containers (within 5 meters) already containing those same items.\n\nPress & hold [action:local:Activate][action:permanent:Activate] to lock it or set a combination.\n\nThe Inbox will provide feedback by temporarily changing the text on each writeable storage chest it interacts with, so these kinds of chests are recommended."
+cntStorageNetworkInbox,blocks,Container,"Storage Network Inbox"

@@ -7,4 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - ?
 
+- add auth checks before distributing items
 - add container unlock hook
+- add hook to fire when closing a container
+- add secure and unsecure inbox blocks
+- add sound effects on the tile entities that are sorted
+- auto-sort target after move
+- move content from source to target on close
+- update signed target with denied reason
+- update signed target with moved item count
