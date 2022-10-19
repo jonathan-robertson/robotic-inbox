@@ -1,10 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Security.Policy;
 using UnityEngine;
 
 namespace StorageNetwork {
     internal class StorageManager {
         private static readonly ModLog log = new ModLog(typeof(StorageManager));
         private static readonly BlockFace[] blockFaces = new BlockFace[] { BlockFace.Top, BlockFace.Bottom, BlockFace.North, BlockFace.West, BlockFace.South, BlockFace.East };
+        private static readonly Dictionary<Vector3i, string> OriginalText = new Dictionary<Vector3i, string>();
 
         private static readonly int TextureChalkboard = 115;
         private static readonly int TextureRedConcrete = 156;
@@ -14,14 +18,66 @@ namespace StorageNetwork {
         private static readonly int TextureConcreteBlue = 153;
         private static readonly int TextureConcreteGreen = 160;
 
+        public static int InboxBlockId { get; private set; }
+        public static int SecureInboxBlockId { get; private set; }
+        public static int LandClaimRadius { get; private set; }
+        public static int InboxRange { get; private set; } = 5;
+
+        internal static void OnGameStartDone() {
+            try {
+                InboxBlockId = Block.nameIdMapping.GetIdForName("cntStorageNetworkInbox");
+                SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureStorageNetworkInbox");
+
+                var size = GameStats.GetInt(EnumGameStats.LandClaimSize);
+                LandClaimRadius = (size % 2 == 1 ? size - 1 : size) / 2;
+            } catch (Exception e) {
+                log.Error("Error OnGameStartDone", e);
+            }
+        }
+
+        internal static void Distribute(int clrIdx, Vector3i sourcePos) {
+            var source = GameManager.Instance.World.GetTileEntity(clrIdx, sourcePos);
+            if (SecureInboxBlockId != source.blockValue.Block.blockID
+                && InboxBlockId != source.blockValue.Block.blockID) {
+                return;
+            }
+            if (!ToContainer(source, out var sourceContainer)) {
+                log.Debug("Denied: source is not a container... wat?");
+                return;
+            }
+            if (sourceContainer.IsUserAccessing()) {
+                log.Debug("Denied: source container is currently being used by another player");
+                return;
+            }
+
+            if (!GetBoundsWithinLandClaim(sourcePos, out var min, out var max)) {
+                return; // source pos was not within a land claim
+            }
+            Vector3i targetPos;
+            for (int x = min.x; x <= max.x; x++) {
+                targetPos.x = x;
+                for (int y = min.y; y <= max.y; y++) {
+                    targetPos.y = y;
+                    for (int z = min.z; z <= max.z; z++) {
+                        targetPos.z = z;
+                        if (targetPos != sourcePos) { // avoid targeting self (duh)
+                            var target = GameManager.Instance.World.GetTileEntity(clrIdx, targetPos);
+                            if (VerifyContainer(target, targetPos)) {
+                                Distribute(source, target, targetPos);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         internal static void Distribute(TileEntity sourceTileEntity, TileEntity targetTileEntity, Vector3i targetPos) {
-            log.Debug($"Distribute called for {sourceTileEntity?.EntityId} and {targetTileEntity?.EntityId}");
-            if (!CanAccess(sourceTileEntity, targetTileEntity)) {
-                log.Debug("Access Denied");
+            if (!CanAccess(sourceTileEntity, targetTileEntity, targetPos)) {
+                log.Debug($"Access Denied for {targetPos}");
                 GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
                 return;
             }
-            log.Debug("Access Granted");
+            log.Debug($"Access Granted to {targetPos}");
 
             var source = sourceTileEntity as TileEntityLootContainer;
             var target = targetTileEntity as TileEntityLootContainer;
@@ -34,15 +90,6 @@ namespace StorageNetwork {
                 target.SetUserAccessing(true);
                 log.Debug("[L] added access lock to source and target");
 
-                // TODO: find a way to highlight/glow/flash blocks when items transferred or unable to transfer for lock
-                // BlockHighlighter
-                // OOOH! temp change textures and storage text! :D
-                //source.blockValue.Block.text
-
-                //targetContainer.SetContainerSize
-                //targetContainer.SetUserAccessing(true);
-                //targetContainer.TryStackItem()
-
                 for (int s = 0; s < source.items.Length; s++) {
                     if (ItemStack.Empty.Equals(source.items[s])) { continue; }
                     for (int t = 0; t < target.items.Length; t++) {
@@ -52,7 +99,7 @@ namespace StorageNetwork {
                         }
                         log.Debug("source item type is present in target");
                         var startCount = source.items[s].count;
-                        if (!target.TryStackItem(t, source.items[s])) {
+                        if (target.TryStackItem(t, source.items[s])) {
                             // All items could be stacked
                             totalItemsTransferred += startCount;
                             log.Debug($"(+{totalItemsTransferred}) able to move entire item count from source stack to target stack");
@@ -61,9 +108,10 @@ namespace StorageNetwork {
                         }
 
                         // Not all items could be stacked
-                        if (target.AddItem(source.items[s])) {
+                        if (target.AddItem(source.items[s])) { // TODO: might need to clone item stack
                             // Remaining items could be moved to empty slot
-                            source.items[s].Clear();
+                            //source.items[s].Clear();
+                            source.UpdateSlot(s, ItemStack.Empty);
                             totalItemsTransferred += startCount;
                             log.Debug($"(+{totalItemsTransferred}) able to remove remaining item count to new slot in target");
                             targetModified = true;
@@ -78,9 +126,11 @@ namespace StorageNetwork {
                 }
 
                 if (targetModified) {
-                    StackSortUtil.CombineAndSortStacks(target.items);
+                    target.items = StackSortUtil.CombineAndSortStacks(target.items);
+                    
+                    
                     log.Debug("combined and sorted target stacks");
-                    ThreadManager.StartCoroutine(ShowTemporaryText(2, targetTileEntity, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 0 ? "s" : "")}"));
+                    ThreadManager.StartCoroutine(ShowTemporaryText(2, targetPos, targetTileEntity, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
 
                     // TODO: play sound on this entity?
                     // _blockPos.ToVector3(), this.TriggerSound, AudioRolloffMode.Linear, 5
@@ -101,13 +151,57 @@ namespace StorageNetwork {
             }
         }
 
-        private static IEnumerator ShowTemporaryText(float seconds, TileEntity entity, string text) {
+        private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
+            min = max = Vector3i.zero;
+            foreach (var kvp in GameManager.Instance.persistentPlayers.Players) {
+                foreach (var lcb in kvp.Value.GetLandProtectionBlocks()) {
+                    if (source.x >= lcb.x - LandClaimRadius &&
+                        source.x <= lcb.x + LandClaimRadius &&
+                        source.z >= lcb.y - LandClaimRadius &&
+                        source.z <= lcb.z + LandClaimRadius) {
+                        log.Debug($"Found LCB in range at {lcb}");
+                        min.x = Utils.FastMin(source.x - InboxRange, lcb.x - LandClaimRadius);
+                        min.z = Utils.FastMin(source.z - InboxRange, lcb.z - LandClaimRadius);
+                        min.y = 0;
+                        max.x = Utils.FastMax(source.x + InboxRange, lcb.x + LandClaimRadius);
+                        max.z = Utils.FastMax(source.z + InboxRange, lcb.z + LandClaimRadius);
+                        max.y = 255;
+                        log.Debug($"Inbox Range Clamped to min:{min}; max:{max}");
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static bool VerifyContainer(TileEntity entity, Vector3i pos) {
+            var targetIsContainer = ToContainer(entity, out var targetContainer);
+            if (!targetIsContainer ||
+                targetContainer.bPlayerBackpack ||
+                !targetContainer.bPlayerStorage) {
+                return false;
+            }
+            if (targetContainer.IsUserAccessing()) {
+                log.Debug("Denied: target container is currently being used by another player");
+                ThreadManager.StartCoroutine(ShowTemporaryText(3, pos, entity, "Can't Distribute: Currently In Use"));
+                GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+                return false;
+            }
+            return true;
+        }
+
+        private static IEnumerator ShowTemporaryText(float seconds, Vector3i pos, TileEntity entity, string text) {
             if (entity.GetTileEntityType() == TileEntityType.SecureLootSigned) {
                 var container = entity as TileEntitySecureLootContainerSigned;
-                var originalText = container.GetText();
+                if (!OriginalText.ContainsKey(pos)) {
+                    OriginalText.Add(pos, container.GetText());
+                }
                 container.SetText(text);
                 yield return new WaitForSeconds(seconds);
-                container.SetText(originalText);
+                if (OriginalText.TryGetValue(pos, out var originalText)) {
+                    OriginalText.Remove(pos);
+                    container.SetText(originalText);
+                }
             }
         }
 
@@ -119,36 +213,7 @@ namespace StorageNetwork {
             }
         }
 
-        internal static bool CanAccess(TileEntity source, TileEntity target) {
-            var sourceIsContainer = ToContainer(source, out var sourceContainer);
-            if (!sourceIsContainer) {
-                log.Debug("Denied: source is not a container... wat?");
-                return false;
-            }
-            if (sourceContainer.IsUserAccessing()) {
-                log.Debug("Denied: source container is currently being used by another player");
-                return false;
-            }
-
-            var targetIsContainer = ToContainer(target, out var targetContainer);
-            if (!targetIsContainer) {
-                log.Debug("Denied: target is not a container");
-                return false;
-            }
-            if (targetContainer.bPlayerBackpack) {
-                log.Debug("Denied: target is player backpack");
-                return false;
-            }
-            if (!targetContainer.bPlayerStorage) {
-                log.Debug("Denied: target is not player storage");
-                return false;
-            }
-            if (targetContainer.IsUserAccessing()) {
-                log.Debug("Denied: target container is currently being used by another player");
-                ThreadManager.StartCoroutine(ShowTemporaryText(2, target, "Can't Distribute: Currently In Use"));
-                return false;
-            }
-
+        private static bool CanAccess(TileEntity source, TileEntity target, Vector3i targetPos) {
             var sourceIsLockable = ToLock(source, out var sourceLock);
             var targetIsLockable = ToLock(target, out var targetLock);
 
@@ -166,13 +231,13 @@ namespace StorageNetwork {
 
             if (!targetLock.HasPassword()) {
                 log.Debug("Denied: target is locked but has no password set");
-                ThreadManager.StartCoroutine(ShowTemporaryText(2, target, "Can't Distribute: Locked and has no password"));
+                ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, target, "Can't Distribute: Locked and has no password"));
                 return false;
             }
 
             if (!sourceIsLockable || !sourceLock.IsLocked()) {
                 log.Debug("Denied: source does not have a lock but target does and is locked");
-                ThreadManager.StartCoroutine(ShowTemporaryText(2, target, "Can't Distribute: Locked but Inbox isn't"));
+                ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, target, "Can't Distribute: Locked but Inbox isn't"));
                 return false;
             }
 
@@ -182,11 +247,11 @@ namespace StorageNetwork {
             }
 
             log.Debug("Denied: source and target are locked with different passwords");
-            ThreadManager.StartCoroutine(ShowTemporaryText(2, target, "Can't Distribute: Passwords Don't match"));
+            ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, target, "Can't Distribute: Passwords Don't match"));
             return false;
         }
 
-        internal static bool ToContainer(TileEntity entity, out TileEntityLootContainer typed) {
+        private static bool ToContainer(TileEntity entity, out TileEntityLootContainer typed) {
             if (entity != null
                 && (entity.GetTileEntityType() == TileEntityType.Loot
                 || entity.GetTileEntityType() == TileEntityType.SecureLoot
@@ -198,7 +263,7 @@ namespace StorageNetwork {
             return false;
         }
 
-        internal static bool ToLock(TileEntity entity, out ILockable typed) {
+        private static bool ToLock(TileEntity entity, out ILockable typed) {
             if (entity.GetTileEntityType() == TileEntityType.SecureLoot
                 || entity.GetTileEntityType() == TileEntityType.SecureLootSigned) {
                 typed = entity as ILockable;

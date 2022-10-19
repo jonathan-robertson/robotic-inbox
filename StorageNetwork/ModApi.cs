@@ -9,6 +9,8 @@ namespace StorageNetwork {
             Harmony harmony = new Harmony(GetType().ToString());
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
+            ModEvents.GameStartDone.RegisterHandler(StorageManager.OnGameStartDone);
+
             /* TODO
              * Determine if storage OnClose triggers a Net Package
              *  GameManager.TEUnlockServer(int, Vector3i, int) : void @06005F3E
