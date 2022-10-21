@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - add auth checks before distributing items
 - add container unlock hook
+- add crafting recipe
 - add hook to fire when closing a container
+- add journal entry
 - add secure and unsecure inbox blocks
 - add sound effects on the tile entities that are sorted
 - auto-sort target after move
+- limit checks to only boxes within the same LCB as the source
 - move content from source to target on close
 - only sort if source is within LCB
 - repeat check for multiple blocks around source (not just y+1)

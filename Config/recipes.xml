@@ -1,0 +1,9 @@
+<config>
+    <append xpath="/recipes">
+        <recipe name="cntSecureStorageNetworkInbox" count="1" craft_area="workbench" tags="workbenchCrafting">
+            <ingredient name="resourceForgedIron" count="12" />
+            <ingredient name="resourceMechanicalParts" count="6" />
+            <ingredient name="resourceElectricParts" count="8" />
+        </recipe>
+    </append>
+</config>

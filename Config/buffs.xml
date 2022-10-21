@@ -1,0 +1,8 @@
+<config>
+    <append xpath="/buffs/buff[@name='buffStatusCheck02']">
+        <effect_group name="storage-network-journal-entries">
+            <triggered_effect trigger="onSelfEnteredGame" action="AddJournalEntry" journal="cntSecureStorageNetworkInboxTip01" />
+            <triggered_effect trigger="onSelfEnteredGame" action="AddJournalEntry" journal="cntSecureStorageNetworkInboxTip02" />
+        </effect_group>
+    </append>
+</config>

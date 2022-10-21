@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Security.Policy;
 using UnityEngine;
 
 namespace StorageNetwork {
@@ -17,6 +16,9 @@ namespace StorageNetwork {
         private static readonly int TextureMetalStainlessSteel = 77; // blue
         private static readonly int TextureConcreteBlue = 153;
         private static readonly int TextureConcreteGreen = 160;
+
+        private static readonly int yMin = 0;
+        private static readonly int yMax = 253;
 
         public static int InboxBlockId { get; private set; }
         public static int SecureInboxBlockId { get; private set; }
@@ -50,7 +52,9 @@ namespace StorageNetwork {
                 return;
             }
 
+            // TODO: Limit min/max to only points **within** the same LCB as the source
             if (!GetBoundsWithinLandClaim(sourcePos, out var min, out var max)) {
+                log.Debug("inbox is not within LCB");
                 return; // source pos was not within a land claim
             }
             Vector3i targetPos;
@@ -71,64 +75,86 @@ namespace StorageNetwork {
             }
         }
 
-        internal static void Distribute(TileEntity sourceTileEntity, TileEntity targetTileEntity, Vector3i targetPos) {
+        private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
+            min = max = Vector3i.zero;
+            foreach (var kvp in GameManager.Instance.persistentPlayers.Players) {
+                foreach (var lcb in kvp.Value.GetLandProtectionBlocks()) {
+                    if (source.x >= lcb.x - LandClaimRadius &&
+                        source.x <= lcb.x + LandClaimRadius &&
+                        source.z >= lcb.y - LandClaimRadius &&
+                        source.z <= lcb.z + LandClaimRadius) {
+                        log.Debug($"Found LCB in range at {lcb}");
+                        min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
+                        min.z = Utils.FastMax(source.z - InboxRange, lcb.z - LandClaimRadius);
+                        min.y = Utils.FastMax(source.y - InboxRange, yMin);
+                        max.x = Utils.FastMin(source.x + InboxRange, lcb.x + LandClaimRadius);
+                        max.z = Utils.FastMin(source.z + InboxRange, lcb.z + LandClaimRadius);
+                        max.y = Utils.FastMin(source.y + InboxRange, yMax);
+                        log.Debug($"Inbox Range Clamped to min:{min}; max:{max}");
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static void Distribute(TileEntity sourceTileEntity, TileEntity targetTileEntity, Vector3i targetPos) {
             if (!CanAccess(sourceTileEntity, targetTileEntity, targetPos)) {
-                log.Debug($"Access Denied for {targetPos}");
+                //log.Debug($"Access Denied for {targetPos}");
                 GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
                 return;
             }
-            log.Debug($"Access Granted to {targetPos}");
+            //log.Debug($"Access Granted to {targetPos}");
 
             var source = sourceTileEntity as TileEntityLootContainer;
             var target = targetTileEntity as TileEntityLootContainer;
 
             try {
-                var targetModified = false;
                 var totalItemsTransferred = 0;
 
                 source.SetUserAccessing(true);
                 target.SetUserAccessing(true);
-                log.Debug("[L] added access lock to source and target");
+                //log.Debug("[L] added access lock to source and target");
 
                 for (int s = 0; s < source.items.Length; s++) {
                     if (ItemStack.Empty.Equals(source.items[s])) { continue; }
+                    var foundMatch = false;
+                    var fullyMoved = false;
+                    var startCount = source.items[s].count;
+                    // try to stack source itemStack into any matching target itemStacks
                     for (int t = 0; t < target.items.Length; t++) {
                         if (target.items[t].itemValue.ItemClass != source.items[s].itemValue.ItemClass) {
                             // Move on to next target if this target doesn't match source type
                             continue;
                         }
-                        log.Debug("source item type is present in target");
-                        var startCount = source.items[s].count;
+                        foundMatch = true;
                         if (target.TryStackItem(t, source.items[s])) {
                             // All items could be stacked
                             totalItemsTransferred += startCount;
                             log.Debug($"(+{totalItemsTransferred}) able to move entire item count from source stack to target stack");
-                            targetModified = true;
+                            fullyMoved = true;
                             break;
                         }
+                    }
+                    // for any items left over in source itemStack, place in a new target slot
+                    if (foundMatch && !fullyMoved) {
 
                         // Not all items could be stacked
-                        if (target.AddItem(source.items[s])) { // TODO: might need to clone item stack
+                        if (target.AddItem(source.items[s])) {
                             // Remaining items could be moved to empty slot
-                            //source.items[s].Clear();
                             source.UpdateSlot(s, ItemStack.Empty);
                             totalItemsTransferred += startCount;
                             log.Debug($"(+{totalItemsTransferred}) able to remove remaining item count to new slot in target");
-                            targetModified = true;
-                            break;
+                        } else {
+                            // Remaining items could not be moved to empty slot
+                            totalItemsTransferred += startCount - source.items[s].count;
+                            log.Debug($"(+{totalItemsTransferred}) could not move remaining item stack; checking for duplicate stacks in target to see if we can fit any more");
                         }
-
-                        // Remaining items could not be moved to empty slot
-                        totalItemsTransferred += startCount - source.items[s].count;
-                        log.Debug($"(+{totalItemsTransferred}) could not move remaining item stack; checking for duplicate stacks in target to see if we can fit any more");
-                        targetModified = true;
                     }
                 }
-
-                if (targetModified) {
+                if (totalItemsTransferred > 0) {
                     target.items = StackSortUtil.CombineAndSortStacks(target.items);
-                    
-                    
+
                     log.Debug("combined and sorted target stacks");
                     ThreadManager.StartCoroutine(ShowTemporaryText(2, targetPos, targetTileEntity, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
 
@@ -144,34 +170,13 @@ namespace StorageNetwork {
                     // map_zoom_out
                     GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_close", AudioRolloffMode.Logarithmic, 5);
                 }
+            } catch (Exception e) {
+                log.Error("encountered issues organizing with inbox", e);
             } finally {
                 source.SetUserAccessing(false);
                 target.SetUserAccessing(false);
-                log.Debug("[U] removed access lock from source and target");
+                //log.Debug("[U] removed access lock from source and target");
             }
-        }
-
-        private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
-            min = max = Vector3i.zero;
-            foreach (var kvp in GameManager.Instance.persistentPlayers.Players) {
-                foreach (var lcb in kvp.Value.GetLandProtectionBlocks()) {
-                    if (source.x >= lcb.x - LandClaimRadius &&
-                        source.x <= lcb.x + LandClaimRadius &&
-                        source.z >= lcb.y - LandClaimRadius &&
-                        source.z <= lcb.z + LandClaimRadius) {
-                        log.Debug($"Found LCB in range at {lcb}");
-                        min.x = Utils.FastMin(source.x - InboxRange, lcb.x - LandClaimRadius);
-                        min.z = Utils.FastMin(source.z - InboxRange, lcb.z - LandClaimRadius);
-                        min.y = 0;
-                        max.x = Utils.FastMax(source.x + InboxRange, lcb.x + LandClaimRadius);
-                        max.z = Utils.FastMax(source.z + InboxRange, lcb.z + LandClaimRadius);
-                        max.y = 255;
-                        log.Debug($"Inbox Range Clamped to min:{min}; max:{max}");
-                        return true;
-                    }
-                }
-            }
-            return false;
         }
 
         private static bool VerifyContainer(TileEntity entity, Vector3i pos) {
