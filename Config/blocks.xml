@@ -3,8 +3,7 @@
         <block name="cntSecureRoboticInbox">
             <property name="CreativeMode" value="Player" />
             <property name="Tags" value="door" />
-            <property name="EconomicValue" value="300" />
-            <property name="EconomicBundleSize" value="1" />
+            <property name="EconomicValue" value="150" />
             <property name="SellableToTrader" value="true" />
             <property name="Class" value="SecureLoot" />
             <property name="CustomIcon" value="poiPartHelper" />
@@ -35,8 +34,6 @@
             <property name="DowngradeBlock" value="cntRoboticInbox" />
             <property name="Group" value="Basics,Building,advBuilding" />
             <property name="DescriptionKey" value="cntSecureRoboticInboxDesc" />
-            <property name="EconomicValue" value="10" />
-            <property name="EconomicBundleSize" value="10" />
             <property name="FilterTags" value="MC_playerBlocks,SC_decor" />
         </block>
         <block name="cntRoboticInbox">
