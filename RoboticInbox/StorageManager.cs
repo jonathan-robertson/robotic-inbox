@@ -89,11 +89,9 @@ namespace RoboticInbox {
 
         private static void Distribute(TileEntity sourceTileEntity, TileEntity targetTileEntity, Vector3i targetPos) {
             if (!CanAccess(sourceTileEntity, targetTileEntity, targetPos)) {
-                //log.Debug($"Access Denied for {targetPos}");
                 GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
                 return;
             }
-            //log.Debug($"Access Granted to {targetPos}");
 
             var source = sourceTileEntity as TileEntityLootContainer;
             var target = targetTileEntity as TileEntityLootContainer;
@@ -103,7 +101,6 @@ namespace RoboticInbox {
 
                 source.SetUserAccessing(true);
                 target.SetUserAccessing(true);
-                //log.Debug("[L] added access lock to source and target");
 
                 for (int s = 0; s < source.items.Length; s++) {
                     if (ItemStack.Empty.Equals(source.items[s])) { continue; }
@@ -144,11 +141,10 @@ namespace RoboticInbox {
                     GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_close", AudioRolloffMode.Logarithmic, 5);
                 }
             } catch (Exception e) {
-                log.Error("encountered issues organizing with inbox", e);
+                log.Error("encountered issues organizing with Inbox", e);
             } finally {
                 source.SetUserAccessing(false);
                 target.SetUserAccessing(false);
-                //log.Debug("[U] removed access lock from source and target");
             }
         }
 
