@@ -1,0 +1,5 @@
+<config>
+    <append xpath="/traders/trader_item_groups/trader_item_group[@name='traderAlways']">
+        <item name="cntSecureRoboticInbox" count="0,4" />
+    </append>
+</config>
