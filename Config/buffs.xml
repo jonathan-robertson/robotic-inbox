@@ -1,6 +1,6 @@
 <config>
     <append xpath="/buffs/buff[@name='buffStatusCheck02']">
-        <effect_group name="robotic-storage-journal-entries">
+        <effect_group name="robotic-inbox-journal-entries">
             <triggered_effect trigger="onSelfEnteredGame" action="AddJournalEntry" journal="cntSecureRoboticInboxTip01" />
             <triggered_effect trigger="onSelfEnteredGame" action="AddJournalEntry" journal="cntSecureRoboticInboxTip02" />
         </effect_group>
