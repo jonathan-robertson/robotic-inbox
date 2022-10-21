@@ -38,17 +38,14 @@ namespace RoboticInbox {
                 return;
             }
             if (!ToContainer(source, out var sourceContainer)) {
-                log.Debug("Denied: source is not a container... wat?");
                 return;
             }
             if (sourceContainer.IsUserAccessing()) {
-                log.Debug("Denied: source container is currently being used by another player");
                 return;
             }
 
             // Limit min/max to only points **within** the same LCB as the source
             if (!GetBoundsWithinLandClaim(sourcePos, out var min, out var max)) {
-                log.Debug("inbox is not within LCB");
                 return; // source pos was not within a land claim
             }
             Vector3i targetPos;
@@ -77,14 +74,12 @@ namespace RoboticInbox {
                         source.x <= lcb.x + LandClaimRadius &&
                         source.z >= lcb.y - LandClaimRadius &&
                         source.z <= lcb.z + LandClaimRadius) {
-                        log.Debug($"Found LCB in range at {lcb}");
                         min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
                         min.z = Utils.FastMax(source.z - InboxRange, lcb.z - LandClaimRadius);
                         min.y = Utils.FastMax(source.y - InboxRange, yMin);
                         max.x = Utils.FastMin(source.x + InboxRange, lcb.x + LandClaimRadius);
                         max.z = Utils.FastMin(source.z + InboxRange, lcb.z + LandClaimRadius);
                         max.y = Utils.FastMin(source.y + InboxRange, yMax);
-                        log.Debug($"Inbox Range Clamped to min:{min}; max:{max}");
                         return true;
                     }
                 }
@@ -125,7 +120,6 @@ namespace RoboticInbox {
                         if (target.TryStackItem(t, source.items[s])) {
                             // All items could be stacked
                             totalItemsTransferred += startCount;
-                            log.Debug($"(+{totalItemsTransferred}) able to move entire item count from source stack to target stack");
                             fullyMoved = true;
                             break;
                         }
@@ -138,18 +132,14 @@ namespace RoboticInbox {
                             // Remaining items could be moved to empty slot
                             source.UpdateSlot(s, ItemStack.Empty);
                             totalItemsTransferred += startCount;
-                            log.Debug($"(+{totalItemsTransferred}) able to remove remaining item count to new slot in target");
                         } else {
                             // Remaining items could not be moved to empty slot
                             totalItemsTransferred += startCount - source.items[s].count;
-                            log.Debug($"(+{totalItemsTransferred}) could not move remaining item stack; checking for duplicate stacks in target to see if we can fit any more");
                         }
                     }
                 }
                 if (totalItemsTransferred > 0) {
                     target.items = StackSortUtil.CombineAndSortStacks(target.items);
-
-                    log.Debug("combined and sorted target stacks");
                     ThreadManager.StartCoroutine(ShowTemporaryText(2, targetPos, targetTileEntity, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
                     GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_close", AudioRolloffMode.Logarithmic, 5);
                 }
@@ -170,7 +160,6 @@ namespace RoboticInbox {
                 return false;
             }
             if (targetContainer.IsUserAccessing()) {
-                log.Debug("Denied: target container is currently being used by another player");
                 ThreadManager.StartCoroutine(ShowTemporaryText(3, pos, entity, "Can't Distribute: Currently In Use"));
                 GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
                 return false;
@@ -216,35 +205,29 @@ namespace RoboticInbox {
             var targetIsLockable = ToLock(target, out var targetLock);
 
             if (!targetIsLockable) {
-                log.Debug("Allowed: target is not lockable");
                 return true;
             }
 
             if (!targetLock.IsLocked()) {
-                log.Debug("Allowed: target is not locked");
                 return true;
             }
 
             // so target is both lockable and currently locked...
 
             if (!targetLock.HasPassword()) {
-                log.Debug("Denied: target is locked but has no password set");
                 ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, target, "Can't Distribute: Locked and has no password"));
                 return false;
             }
 
             if (!sourceIsLockable || !sourceLock.IsLocked()) {
-                log.Debug("Denied: source does not have a lock but target does and is locked");
                 ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, target, "Can't Distribute: Locked but Inbox isn't"));
                 return false;
             }
 
             if (sourceLock.GetPassword().Equals(targetLock.GetPassword())) {
-                log.Debug("Allowed: source and target are each locked but also shared the same password");
                 return true;
             }
 
-            log.Debug("Denied: source and target are locked with different passwords");
             ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, target, "Can't Distribute: Passwords Don't match"));
             return false;
         }
