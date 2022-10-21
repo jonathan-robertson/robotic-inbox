@@ -1,6 +1,6 @@
 <config>
     <append xpath="/blocks">
-        <block name="cntSecureStorageNetworkInbox">
+        <block name="cntSecureRoboticInbox">
             <property name="CreativeMode" value="Player" />
             <property name="Tags" value="door" />
             <property name="EconomicValue" value="300" />
@@ -32,14 +32,14 @@
             <drop event="Destroy" name="resourceElectricParts" count="1,4" />
             <drop event="Fall" name="scrapMetalPile" count="1" prob="0.75" stick_chance="1" />
             <property name="LPHardnessScale" value="8" />
-            <property name="DowngradeBlock" value="cntStorageNetworkInbox" />
+            <property name="DowngradeBlock" value="cntRoboticInbox" />
             <property name="Group" value="Basics,Building,advBuilding" />
-            <property name="DescriptionKey" value="cntSecureStorageNetworkInboxDesc" />
+            <property name="DescriptionKey" value="cntSecureRoboticInboxDesc" />
             <property name="EconomicValue" value="10" />
             <property name="EconomicBundleSize" value="10" />
             <property name="FilterTags" value="MC_playerBlocks,SC_decor" />
         </block>
-        <block name="cntStorageNetworkInbox">
+        <block name="cntRoboticInbox">
             <property name="CreativeMode" value="Dev" />
             <property name="Class" value="Loot" />
             <property name="SellableToTrader" value="false" />

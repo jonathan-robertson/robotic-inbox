@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace StorageNetwork {
+namespace RoboticInbox {
     internal class ModLog {
         private readonly string className;
 

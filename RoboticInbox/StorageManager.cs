@@ -3,19 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace StorageNetwork {
+namespace RoboticInbox {
     internal class StorageManager {
         private static readonly ModLog log = new ModLog(typeof(StorageManager));
-        private static readonly BlockFace[] blockFaces = new BlockFace[] { BlockFace.Top, BlockFace.Bottom, BlockFace.North, BlockFace.West, BlockFace.South, BlockFace.East };
         private static readonly Dictionary<Vector3i, string> OriginalText = new Dictionary<Vector3i, string>();
-
-        private static readonly int TextureChalkboard = 115;
-        private static readonly int TextureRedConcrete = 156;
-        private static readonly int TextureMetalRed = 88;
-        private static readonly int TextureConcreteYellow = 152;
-        private static readonly int TextureMetalStainlessSteel = 77; // blue
-        private static readonly int TextureConcreteBlue = 153;
-        private static readonly int TextureConcreteGreen = 160;
 
         private static readonly int yMin = 0;
         private static readonly int yMax = 253;
@@ -27,8 +18,8 @@ namespace StorageNetwork {
 
         internal static void OnGameStartDone() {
             try {
-                InboxBlockId = Block.nameIdMapping.GetIdForName("cntStorageNetworkInbox");
-                SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureStorageNetworkInbox");
+                InboxBlockId = Block.nameIdMapping.GetIdForName("cntRoboticInbox");
+                SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureRoboticInbox");
 
                 var size = GameStats.GetInt(EnumGameStats.LandClaimSize);
                 LandClaimRadius = (size % 2 == 1 ? size - 1 : size) / 2;
@@ -52,7 +43,7 @@ namespace StorageNetwork {
                 return;
             }
 
-            // TODO: Limit min/max to only points **within** the same LCB as the source
+            // Limit min/max to only points **within** the same LCB as the source
             if (!GetBoundsWithinLandClaim(sourcePos, out var min, out var max)) {
                 log.Debug("inbox is not within LCB");
                 return; // source pos was not within a land claim
@@ -157,17 +148,6 @@ namespace StorageNetwork {
 
                     log.Debug("combined and sorted target stacks");
                     ThreadManager.StartCoroutine(ShowTemporaryText(2, targetPos, targetTileEntity, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
-
-                    // TODO: play sound on this entity?
-                    // _blockPos.ToVector3(), this.TriggerSound, AudioRolloffMode.Linear, 5
-                    // pipe_shotgun_breech_open
-                    // pipe_pistol_breech_close
-                    // vehicle_storage_open
-                    // vehicle_storage_close
-                    // open_inventory
-                    // open_block_menu
-                    // map_zoom_in
-                    // map_zoom_out
                     GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_close", AudioRolloffMode.Logarithmic, 5);
                 }
             } catch (Exception e) {
@@ -210,6 +190,15 @@ namespace StorageNetwork {
             }
         }
 
+        /* TODO: provide feedback with textures to non-writable storage
+        private static readonly BlockFace[] blockFaces = new BlockFace[] { BlockFace.Top, BlockFace.Bottom, BlockFace.North, BlockFace.West, BlockFace.South, BlockFace.East };
+        private static readonly int TextureChalkboard = 115;
+        private static readonly int TextureRedConcrete = 156;
+        private static readonly int TextureMetalRed = 88;
+        private static readonly int TextureConcreteYellow = 152;
+        private static readonly int TextureMetalStainlessSteel = 77; // blue
+        private static readonly int TextureConcreteBlue = 153;
+        private static readonly int TextureConcreteGreen = 160;
         private static IEnumerator DelayUpdateTextures(float seconds, Vector3i pos, int[] originalTextures) {
             //log.Debug($"{BlockFace.Top}: {originalTextures[(uint)BlockFace.Top]}, {BlockFace.Bottom}: {originalTextures[(uint)BlockFace.Bottom]}, {BlockFace.North}: {originalTextures[(uint)BlockFace.North]}, {BlockFace.West}: {originalTextures[(uint)BlockFace.West]}, {BlockFace.South}: {originalTextures[(uint)BlockFace.South]}, {BlockFace.East}: {originalTextures[(uint)BlockFace.East]}");
             yield return new WaitForSeconds(seconds);
@@ -217,6 +206,7 @@ namespace StorageNetwork {
                 GameManager.Instance.SetBlockTextureServer(pos, _side, originalTextures[(uint)_side], -1);
             }
         }
+        */
 
         private static bool CanAccess(TileEntity source, TileEntity target, Vector3i targetPos) {
             var sourceIsLockable = ToLock(source, out var sourceLock);
@@ -257,10 +247,11 @@ namespace StorageNetwork {
         }
 
         private static bool ToContainer(TileEntity entity, out TileEntityLootContainer typed) {
-            if (entity != null
-                && (entity.GetTileEntityType() == TileEntityType.Loot
-                || entity.GetTileEntityType() == TileEntityType.SecureLoot
-                || entity.GetTileEntityType() == TileEntityType.SecureLootSigned)) {
+            if (entity != null && (
+                entity.GetTileEntityType() == TileEntityType.Loot ||
+                entity.GetTileEntityType() == TileEntityType.SecureLoot ||
+                entity.GetTileEntityType() == TileEntityType.SecureLootSigned
+            )) {
                 typed = entity as TileEntityLootContainer;
                 return true;
             }
@@ -269,8 +260,8 @@ namespace StorageNetwork {
         }
 
         private static bool ToLock(TileEntity entity, out ILockable typed) {
-            if (entity.GetTileEntityType() == TileEntityType.SecureLoot
-                || entity.GetTileEntityType() == TileEntityType.SecureLootSigned) {
+            if (entity.GetTileEntityType() == TileEntityType.SecureLoot ||
+                entity.GetTileEntityType() == TileEntityType.SecureLootSigned) {
                 typed = entity as ILockable;
                 return true;
             }
