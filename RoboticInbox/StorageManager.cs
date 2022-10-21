@@ -30,6 +30,9 @@ namespace RoboticInbox {
 
         internal static void Distribute(int clrIdx, Vector3i sourcePos) {
             var source = GameManager.Instance.World.GetTileEntity(clrIdx, sourcePos);
+            if (source == null || source.blockValue.Block == null) {
+                return;
+            }
             if (SecureInboxBlockId != source.blockValue.Block.blockID
                 && InboxBlockId != source.blockValue.Block.blockID) {
                 return;
