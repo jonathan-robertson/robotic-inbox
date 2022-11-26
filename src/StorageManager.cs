@@ -5,11 +5,11 @@ using UnityEngine;
 
 namespace RoboticInbox {
     internal class StorageManager {
-        private static readonly ModLog log = new ModLog(typeof(StorageManager));
+        private static readonly ModLog<StorageManager> log = new ModLog<StorageManager>();
         private static readonly Dictionary<Vector3i, string> OriginalText = new Dictionary<Vector3i, string>();
 
         private static readonly int yMin = 0;
-        private static readonly int yMax = 253;
+        private static readonly int yMax = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
 
         public static int InboxBlockId { get; private set; }
         public static int SecureInboxBlockId { get; private set; }
@@ -18,36 +18,46 @@ namespace RoboticInbox {
 
         internal static void OnGameStartDone() {
             try {
+                //log.DebugMode = true; // TODO: disable this later
+
                 InboxBlockId = Block.nameIdMapping.GetIdForName("cntRoboticInbox");
                 SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureRoboticInbox");
 
                 var size = GameStats.GetInt(EnumGameStats.LandClaimSize);
                 LandClaimRadius = (size % 2 == 1 ? size - 1 : size) / 2;
+                log.Debug($"LandClaimRadius found to be {LandClaimRadius}m");
             } catch (Exception e) {
                 log.Error("Error OnGameStartDone", e);
             }
         }
 
         internal static void Distribute(int clrIdx, Vector3i sourcePos) {
+            log.Debug($"Distribute called for tile entity at {sourcePos}");
             var source = GameManager.Instance.World.GetTileEntity(clrIdx, sourcePos);
             if (source == null || source.blockValue.Block == null) {
+                log.Warn($"TileEntity not found at {sourcePos}");
                 return;
             }
             if (SecureInboxBlockId != source.blockValue.Block.blockID
                 && InboxBlockId != source.blockValue.Block.blockID) {
                 return;
             }
+            log.Debug($"TileEntity block id found to match {(SecureInboxBlockId != source.blockValue.Block.blockID ? InboxBlockId : SecureInboxBlockId)}");
             if (!ToContainer(source, out var sourceContainer)) {
+                log.Debug($"TileEntity at {sourcePos} could not be converted into a TileEntityLootContainer.");
                 return;
             }
             if (sourceContainer.IsUserAccessing()) {
+                log.Debug($"TileEntity at {sourcePos} is currently being accessed.");
                 return;
             }
 
             // Limit min/max to only points **within** the same LCB as the source
             if (!GetBoundsWithinLandClaim(sourcePos, out var min, out var max)) {
+                log.Debug($"GetBoundsWithinLandClaim found that the source position was not within a land claim");
                 return; // source pos was not within a land claim
             }
+            log.Debug($"GetBoundsWithinLandClaim returned min: {min}, max: {max}");
             Vector3i targetPos;
             for (int x = min.x; x <= max.x; x++) {
                 targetPos.x = x;
@@ -72,7 +82,7 @@ namespace RoboticInbox {
                 foreach (var lcb in kvp.Value.GetLandProtectionBlocks()) {
                     if (source.x >= lcb.x - LandClaimRadius &&
                         source.x <= lcb.x + LandClaimRadius &&
-                        source.z >= lcb.y - LandClaimRadius &&
+                        source.z >= lcb.z - LandClaimRadius &&
                         source.z <= lcb.z + LandClaimRadius) {
                         min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
                         min.z = Utils.FastMax(source.z - InboxRange, lcb.z - LandClaimRadius);

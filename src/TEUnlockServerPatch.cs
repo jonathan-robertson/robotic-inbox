@@ -4,7 +4,7 @@ using System;
 namespace RoboticInbox {
     [HarmonyPatch(typeof(GameManager), "TEUnlockServer", new Type[] { typeof(int), typeof(Vector3i), typeof(int) })]
     internal class TEUnlockServerPatch {
-        private static readonly ModLog log = new ModLog(typeof(TEUnlockServerPatch));
+        private static readonly ModLog<TEUnlockServerPatch> log = new ModLog<TEUnlockServerPatch>();
 
         public static bool Prefix(int _clrIdx, Vector3i _blockPos) {
             try {

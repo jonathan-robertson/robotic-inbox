@@ -1,19 +1,25 @@
 ﻿using System;
 
 namespace RoboticInbox {
-    internal class ModLog {
+    internal class ModLog<T> {
         private readonly string className;
 
-        public ModLog(Type classType) {
-            className = classType.FullName;
+        public bool DebugMode { get; set; } = false;
+
+        public ModLog() {
+            className = typeof(T).FullName;
         }
 
         public void Trace(string message) {
-            Log.Out($"[{className}] TRACE: {message}");
+            if (DebugMode) {
+                Log.Out($"[{className}] TRACE: {message}");
+            }
         }
 
         public void Debug(string message) {
-            Log.Out($"[{className}] DEBUG: {message}");
+            if (DebugMode) {
+                Log.Out($"[{className}] DEBUG: {message}");
+            }
         }
 
         public void Info(string message) {
