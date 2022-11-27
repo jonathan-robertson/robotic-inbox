@@ -38,8 +38,7 @@ namespace RoboticInbox {
                 log.Warn($"TileEntity not found at {sourcePos}");
                 return;
             }
-            if (SecureInboxBlockId != source.blockValue.Block.blockID
-                && InboxBlockId != source.blockValue.Block.blockID) {
+            if (!IsRoboticInbox(source)) {
                 return;
             }
             log.Debug($"TileEntity block id found to match {(SecureInboxBlockId != source.blockValue.Block.blockID ? InboxBlockId : SecureInboxBlockId)}");
@@ -74,6 +73,11 @@ namespace RoboticInbox {
                     }
                 }
             }
+        }
+
+        private static bool IsRoboticInbox(TileEntity tileEntity) {
+            return SecureInboxBlockId == tileEntity.blockValue.Block.blockID
+                || InboxBlockId == tileEntity.blockValue.Block.blockID;
         }
 
         private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
@@ -162,7 +166,8 @@ namespace RoboticInbox {
             var targetIsContainer = ToContainer(entity, out var targetContainer);
             if (!targetIsContainer ||
                 targetContainer.bPlayerBackpack ||
-                !targetContainer.bPlayerStorage) {
+                !targetContainer.bPlayerStorage ||
+                IsRoboticInbox(entity)) {
                 return false;
             }
             if (targetContainer.IsUserAccessing()) {
