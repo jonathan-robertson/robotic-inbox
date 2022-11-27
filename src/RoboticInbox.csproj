@@ -68,12 +68,15 @@
   <ItemGroup>
     <Compile Include="ModApi.cs" />
     <Compile Include="ModLog.cs" />
-    <Compile Include="TEUnlockServerPatch.cs" />
+    <Compile Include="Patches\NetPackageSetBlock_Patches.cs" />
+    <Compile Include="Patches\GameManager_Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StorageManager.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent></PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

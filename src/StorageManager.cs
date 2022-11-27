@@ -18,7 +18,7 @@ namespace RoboticInbox {
 
         internal static void OnGameStartDone() {
             try {
-                //log.DebugMode = true; // TODO: disable this later
+                //log.debugMode = true; // TODO: disable this later
 
                 InboxBlockId = Block.nameIdMapping.GetIdForName("cntRoboticInbox");
                 SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureRoboticInbox");
@@ -38,8 +38,7 @@ namespace RoboticInbox {
                 log.Warn($"TileEntity not found at {sourcePos}");
                 return;
             }
-            if (SecureInboxBlockId != source.blockValue.Block.blockID
-                && InboxBlockId != source.blockValue.Block.blockID) {
+            if (!IsRoboticInbox(source.blockValue.Block.blockID)) {
                 return;
             }
             log.Debug($"TileEntity block id found to match {(SecureInboxBlockId != source.blockValue.Block.blockID ? InboxBlockId : SecureInboxBlockId)}");
@@ -76,25 +75,42 @@ namespace RoboticInbox {
             }
         }
 
-        private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
-            min = max = Vector3i.zero;
+        internal static bool TryGetActiveLcbCoordsContainingPos(Vector3i sourcePos, out Vector3i landClaimPos) {
+            var _world = GameManager.Instance.World;
             foreach (var kvp in GameManager.Instance.persistentPlayers.Players) {
+                if (!_world.IsLandProtectionValidForPlayer(kvp.Value)) {
+                    continue; // this player has been offline too long
+                }
                 foreach (var lcb in kvp.Value.GetLandProtectionBlocks()) {
-                    if (source.x >= lcb.x - LandClaimRadius &&
-                        source.x <= lcb.x + LandClaimRadius &&
-                        source.z >= lcb.z - LandClaimRadius &&
-                        source.z <= lcb.z + LandClaimRadius) {
-                        min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
-                        min.z = Utils.FastMax(source.z - InboxRange, lcb.z - LandClaimRadius);
-                        min.y = Utils.FastMax(source.y - InboxRange, yMin);
-                        max.x = Utils.FastMin(source.x + InboxRange, lcb.x + LandClaimRadius);
-                        max.z = Utils.FastMin(source.z + InboxRange, lcb.z + LandClaimRadius);
-                        max.y = Utils.FastMin(source.y + InboxRange, yMax);
+                    if (sourcePos.x >= lcb.x - LandClaimRadius &&
+                        sourcePos.x <= lcb.x + LandClaimRadius &&
+                        sourcePos.z >= lcb.z - LandClaimRadius &&
+                        sourcePos.z <= lcb.z + LandClaimRadius) {
+                        landClaimPos = lcb;
                         return true;
                     }
                 }
             }
+            landClaimPos = default;
             return false;
+        }
+
+        internal static bool IsRoboticInbox(int blockId) {
+            return SecureInboxBlockId == blockId || InboxBlockId == blockId;
+        }
+
+        private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
+            min = max = default;
+            if (!TryGetActiveLcbCoordsContainingPos(source, out var lcb)) {
+                return false;
+            }
+            min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
+            min.z = Utils.FastMax(source.z - InboxRange, lcb.z - LandClaimRadius);
+            min.y = Utils.FastMax(source.y - InboxRange, yMin);
+            max.x = Utils.FastMin(source.x + InboxRange, lcb.x + LandClaimRadius);
+            max.z = Utils.FastMin(source.z + InboxRange, lcb.z + LandClaimRadius);
+            max.y = Utils.FastMin(source.y + InboxRange, yMax);
+            return true;
         }
 
         private static void Distribute(TileEntity sourceTileEntity, TileEntity targetTileEntity, Vector3i targetPos) {
@@ -162,7 +178,8 @@ namespace RoboticInbox {
             var targetIsContainer = ToContainer(entity, out var targetContainer);
             if (!targetIsContainer ||
                 targetContainer.bPlayerBackpack ||
-                !targetContainer.bPlayerStorage) {
+                !targetContainer.bPlayerStorage ||
+                IsRoboticInbox(entity.blockValue.Block.blockID)) {
                 return false;
             }
             if (targetContainer.IsUserAccessing()) {
