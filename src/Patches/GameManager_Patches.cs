@@ -1,10 +1,10 @@
 ﻿using HarmonyLib;
 using System;
 
-namespace RoboticInbox {
+namespace RoboticInbox.Patches {
     [HarmonyPatch(typeof(GameManager), "TEUnlockServer", new Type[] { typeof(int), typeof(Vector3i), typeof(int) })]
-    internal class TEUnlockServerPatch {
-        private static readonly ModLog<TEUnlockServerPatch> log = new ModLog<TEUnlockServerPatch>();
+    internal class GameManager_TEUnlockServer_Patch {
+        private static readonly ModLog<GameManager_TEUnlockServer_Patch> log = new ModLog<GameManager_TEUnlockServer_Patch>();
 
         public static bool Prefix(int _clrIdx, Vector3i _blockPos) {
             try {
