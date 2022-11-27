@@ -5,4 +5,13 @@
             <triggered_effect trigger="onSelfEnteredGame" action="AddJournalEntry" journal="cntSecureRoboticInboxTip02" />
         </effect_group>
     </append>
+    <append xpath="/buffs">
+        <buff name="notifyRoboticInboxNotInLcb">
+            <duration value="2" />
+            <stack_type value="ignore" />
+            <effect_group>
+                <triggered_effect trigger="onSelfBuffStart" action="ShowToolbeltMessage" message_key="notifyRoboticInboxNotInLcbTip" />
+            </effect_group>
+        </buff>
+    </append>
 </config>

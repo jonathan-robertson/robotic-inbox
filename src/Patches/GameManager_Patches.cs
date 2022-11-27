@@ -10,7 +10,7 @@ namespace RoboticInbox.Patches {
             try {
                 StorageManager.Distribute(_clrIdx, _blockPos);
             } catch (Exception e) {
-                log.Error("failed to handle prefix for GameManager.TEUnlockServer", e);
+                log.Error("Failed to handle prefix for GameManager.TEUnlockServer", e);
             }
             return true;
         }

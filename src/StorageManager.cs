@@ -18,7 +18,7 @@ namespace RoboticInbox {
 
         internal static void OnGameStartDone() {
             try {
-                //log.DebugMode = true; // TODO: disable this later
+                //log.debugMode = true; // TODO: disable this later
 
                 InboxBlockId = Block.nameIdMapping.GetIdForName("cntRoboticInbox");
                 SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureRoboticInbox");
@@ -38,7 +38,7 @@ namespace RoboticInbox {
                 log.Warn($"TileEntity not found at {sourcePos}");
                 return;
             }
-            if (!IsRoboticInbox(source)) {
+            if (!IsRoboticInbox(source.blockValue.Block.blockID)) {
                 return;
             }
             log.Debug($"TileEntity block id found to match {(SecureInboxBlockId != source.blockValue.Block.blockID ? InboxBlockId : SecureInboxBlockId)}");
@@ -75,8 +75,12 @@ namespace RoboticInbox {
             }
         }
 
-        internal static bool TryGetLcbCoordsContainingPos(Vector3i sourcePos, out Vector3i landClaimPos) {
+        internal static bool TryGetActiveLcbCoordsContainingPos(Vector3i sourcePos, out Vector3i landClaimPos) {
+            var _world = GameManager.Instance.World;
             foreach (var kvp in GameManager.Instance.persistentPlayers.Players) {
+                if (!_world.IsLandProtectionValidForPlayer(kvp.Value)) {
+                    continue; // this player has been offline too long
+                }
                 foreach (var lcb in kvp.Value.GetLandProtectionBlocks()) {
                     if (sourcePos.x >= lcb.x - LandClaimRadius &&
                         sourcePos.x <= lcb.x + LandClaimRadius &&
@@ -91,14 +95,13 @@ namespace RoboticInbox {
             return false;
         }
 
-        private static bool IsRoboticInbox(TileEntity tileEntity) {
-            return SecureInboxBlockId == tileEntity.blockValue.Block.blockID
-                || InboxBlockId == tileEntity.blockValue.Block.blockID;
+        internal static bool IsRoboticInbox(int blockId) {
+            return SecureInboxBlockId == blockId || InboxBlockId == blockId;
         }
 
         private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
             min = max = default;
-            if (!TryGetLcbCoordsContainingPos(source, out var lcb)) {
+            if (!TryGetActiveLcbCoordsContainingPos(source, out var lcb)) {
                 return false;
             }
             min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
@@ -176,7 +179,7 @@ namespace RoboticInbox {
             if (!targetIsContainer ||
                 targetContainer.bPlayerBackpack ||
                 !targetContainer.bPlayerStorage ||
-                IsRoboticInbox(entity)) {
+                IsRoboticInbox(entity.blockValue.Block.blockID)) {
                 return false;
             }
             if (targetContainer.IsUserAccessing()) {

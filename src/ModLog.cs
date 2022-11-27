@@ -3,21 +3,20 @@
 namespace RoboticInbox {
     internal class ModLog<T> {
         private readonly string className;
-
-        public bool DebugMode { get; set; } = false;
+        private const bool debugMode = false;
 
         public ModLog() {
             className = typeof(T).FullName;
         }
 
         public void Trace(string message) {
-            if (DebugMode) {
+            if (debugMode) {
                 Log.Out($"[{className}] TRACE: {message}");
             }
         }
 
         public void Debug(string message) {
-            if (DebugMode) {
+            if (debugMode) {
                 Log.Out($"[{className}] DEBUG: {message}");
             }
         }
