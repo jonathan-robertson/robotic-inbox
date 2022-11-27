@@ -75,30 +75,39 @@ namespace RoboticInbox {
             }
         }
 
+        internal static bool TryGetLcbCoordsContainingPos(Vector3i sourcePos, out Vector3i landClaimPos) {
+            foreach (var kvp in GameManager.Instance.persistentPlayers.Players) {
+                foreach (var lcb in kvp.Value.GetLandProtectionBlocks()) {
+                    if (sourcePos.x >= lcb.x - LandClaimRadius &&
+                        sourcePos.x <= lcb.x + LandClaimRadius &&
+                        sourcePos.z >= lcb.z - LandClaimRadius &&
+                        sourcePos.z <= lcb.z + LandClaimRadius) {
+                        landClaimPos = lcb;
+                        return true;
+                    }
+                }
+            }
+            landClaimPos = default;
+            return false;
+        }
+
         private static bool IsRoboticInbox(TileEntity tileEntity) {
             return SecureInboxBlockId == tileEntity.blockValue.Block.blockID
                 || InboxBlockId == tileEntity.blockValue.Block.blockID;
         }
 
         private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
-            min = max = Vector3i.zero;
-            foreach (var kvp in GameManager.Instance.persistentPlayers.Players) {
-                foreach (var lcb in kvp.Value.GetLandProtectionBlocks()) {
-                    if (source.x >= lcb.x - LandClaimRadius &&
-                        source.x <= lcb.x + LandClaimRadius &&
-                        source.z >= lcb.z - LandClaimRadius &&
-                        source.z <= lcb.z + LandClaimRadius) {
-                        min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
-                        min.z = Utils.FastMax(source.z - InboxRange, lcb.z - LandClaimRadius);
-                        min.y = Utils.FastMax(source.y - InboxRange, yMin);
-                        max.x = Utils.FastMin(source.x + InboxRange, lcb.x + LandClaimRadius);
-                        max.z = Utils.FastMin(source.z + InboxRange, lcb.z + LandClaimRadius);
-                        max.y = Utils.FastMin(source.y + InboxRange, yMax);
-                        return true;
-                    }
-                }
+            min = max = default;
+            if (!TryGetLcbCoordsContainingPos(source, out var lcb)) {
+                return false;
             }
-            return false;
+            min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
+            min.z = Utils.FastMax(source.z - InboxRange, lcb.z - LandClaimRadius);
+            min.y = Utils.FastMax(source.y - InboxRange, yMin);
+            max.x = Utils.FastMin(source.x + InboxRange, lcb.x + LandClaimRadius);
+            max.z = Utils.FastMin(source.z + InboxRange, lcb.z + LandClaimRadius);
+            max.y = Utils.FastMin(source.y + InboxRange, yMax);
+            return true;
         }
 
         private static void Distribute(TileEntity sourceTileEntity, TileEntity targetTileEntity, Vector3i targetPos) {
