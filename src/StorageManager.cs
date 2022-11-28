@@ -18,8 +18,6 @@ namespace RoboticInbox {
 
         internal static void OnGameStartDone() {
             try {
-                //log.debugMode = true; // TODO: disable this later
-
                 InboxBlockId = Block.nameIdMapping.GetIdForName("cntRoboticInbox");
                 SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureRoboticInbox");
 
@@ -35,7 +33,7 @@ namespace RoboticInbox {
             log.Debug($"Distribute called for tile entity at {sourcePos}");
             var source = GameManager.Instance.World.GetTileEntity(clrIdx, sourcePos);
             if (source == null || source.blockValue.Block == null) {
-                log.Warn($"TileEntity not found at {sourcePos}");
+                log.Debug($"TileEntity not found at {sourcePos}");
                 return;
             }
             if (!IsRoboticInbox(source.blockValue.Block.blockID)) {
