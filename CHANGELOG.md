@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0] - ?
 
+- lock coordinates to valid map positions
 - update inbox sync to coroutine for performance
 
 ## [1.1.0] - 2022-11-27

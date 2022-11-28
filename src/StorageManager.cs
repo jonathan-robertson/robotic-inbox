@@ -50,11 +50,11 @@ namespace RoboticInbox {
             }
 
             // Limit min/max to only points **within** the same LCB as the source
-            if (!GetBoundsWithinLandClaim(sourcePos, out var min, out var max)) {
-                log.Debug($"GetBoundsWithinLandClaim found that the source position was not within a land claim");
+            if (!GetBoundsWithinWorldAndLandClaim(sourcePos, out var min, out var max)) {
+                log.Debug($"GetBoundsWithinWorldAndLandClaim found that the source position was not within a land claim");
                 return; // source pos was not within a land claim
             }
-            log.Debug($"GetBoundsWithinLandClaim returned min: {min}, max: {max}");
+            log.Debug($"GetBoundsWithinWorldAndLandClaim returned min: {min}, max: {max}");
             ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, source, min, max));
         }
 
@@ -82,19 +82,39 @@ namespace RoboticInbox {
             return SecureInboxBlockId == blockId || InboxBlockId == blockId;
         }
 
-        private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
+        private static bool GetBoundsWithinWorldAndLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
             min = max = default;
             if (!TryGetActiveLcbCoordsContainingPos(source, out var lcb)) {
                 return false;
             }
-            // TODO: also clip to world
-            min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
-            min.z = Utils.FastMax(source.z - InboxRange, lcb.z - LandClaimRadius);
-            min.y = Utils.FastMax(source.y - InboxRange, yMin);
-            max.x = Utils.FastMin(source.x + InboxRange, lcb.x + LandClaimRadius);
-            max.z = Utils.FastMin(source.z + InboxRange, lcb.z + LandClaimRadius);
-            max.y = Utils.FastMin(source.y + InboxRange, yMax);
+
+            // The following logic comes from World.ClampToValidWorldPos (mostly).
+            // May need to re-assess this code if TFP change it in the future.
+            var _world = GameManager.Instance.World;
+            _world.GetWorldExtent(out var _minMapSize, out var _maxMapSize);
+            if (GamePrefs.GetString(EnumGamePrefs.GameWorld) == "Navezgane") {
+                _minMapSize = new Vector3i(-2400, _minMapSize.y, -2400);
+                _maxMapSize = new Vector3i(2400, _maxMapSize.y, 2400);
+            } else if (!GameUtils.IsPlaytesting()) {
+                _minMapSize = new Vector3i(_minMapSize.x + 320, _minMapSize.y, _minMapSize.z + 320);
+                _maxMapSize = new Vector3i(_maxMapSize.x - 320, _maxMapSize.y, _maxMapSize.z - 320);
+            }
+
+            min.x = FastMax(source.x - InboxRange, lcb.x - LandClaimRadius, _minMapSize.x);
+            min.z = FastMax(source.z - InboxRange, lcb.z - LandClaimRadius, _minMapSize.z);
+            min.y = FastMax(source.y - InboxRange, yMin, _minMapSize.y);
+            max.x = FastMin(source.x + InboxRange, lcb.x + LandClaimRadius, _maxMapSize.x);
+            max.z = FastMin(source.z + InboxRange, lcb.z + LandClaimRadius, _maxMapSize.z);
+            max.y = FastMin(source.y + InboxRange, yMax, _maxMapSize.y);
             return true;
+        }
+
+        public static int FastMax(int v1, int v2, int v3) {
+            return Utils.FastMax(v1, Utils.FastMax(v2, v3));
+        }
+
+        public static int FastMin(int v1, int v2, int v3) {
+            return Utils.FastMin(v1, Utils.FastMin(v2, v3));
         }
 
         private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntity source, Vector3i min, Vector3i max) {
