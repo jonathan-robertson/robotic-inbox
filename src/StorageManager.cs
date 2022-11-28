@@ -36,8 +36,8 @@ namespace RoboticInbox {
                 log.Debug($"TileEntity not found at {sourcePos}");
                 return;
             }
-            if (!IsRoboticInbox(source.blockValue.Block.blockID)) {
-                return;
+            if (SecureInboxBlockId != source.blockValue.Block.blockID) {
+                return; // only focus on robotic inbox blocks which are not broken
             }
             log.Debug($"TileEntity block id found to match {(SecureInboxBlockId != source.blockValue.Block.blockID ? InboxBlockId : SecureInboxBlockId)}");
             if (!TryCastAsContainer(source, out var sourceContainer)) {
