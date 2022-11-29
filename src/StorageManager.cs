@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RoboticInbox {
     internal class StorageManager {
         private static readonly ModLog<StorageManager> log = new ModLog<StorageManager>();
-        private static readonly Dictionary<Vector3i, string> OriginalText = new Dictionary<Vector3i, string>();
 
         private static readonly int yMin = 0;
         private static readonly int yMax = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
@@ -55,7 +53,7 @@ namespace RoboticInbox {
                 return; // source pos was not within a land claim
             }
             log.Debug($"GetBoundsWithinWorldAndLandClaim returned min: {min}, max: {max}");
-            ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, source, min, max));
+            ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, sourceContainer, min, max));
         }
 
         internal static bool TryGetActiveLcbCoordsContainingPos(Vector3i sourcePos, out Vector3i landClaimPos) {
@@ -117,7 +115,7 @@ namespace RoboticInbox {
             return Utils.FastMin(v1, Utils.FastMin(v2, v3));
         }
 
-        private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntity source, Vector3i min, Vector3i max) {
+        private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntityLootContainer source, Vector3i min, Vector3i max) {
             Vector3i targetPos;
             for (int x = min.x; x <= max.x; x++) {
                 targetPos.x = x;
@@ -129,7 +127,7 @@ namespace RoboticInbox {
                             var target = GameManager.Instance.World.GetTileEntity(clrIdx, targetPos);
                             if (VerifyContainer(target, out var targetContainer)) {
                                 yield return null; // free up frames just before each distribute
-                                Distribute(source, target, targetContainer, targetPos);
+                                Distribute(source, targetContainer, targetPos);
                             }
                         }
                     }
@@ -144,20 +142,16 @@ namespace RoboticInbox {
                 && !IsRoboticInbox(entity.blockValue.Block.blockID);
         }
 
-        private static void Distribute(TileEntity sourceTileEntity, TileEntity targetTileEntity, TileEntityLootContainer targetContainer, Vector3i targetPos) {
-            if (targetContainer.IsUserAccessing()) {
-                ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, targetTileEntity, "Can't Distribute: Currently In Use"));
-                GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+        private static void Distribute(TileEntityLootContainer source, TileEntityLootContainer target, Vector3i targetPos) {
+            if (target.IsUserAccessing()) {
+                HandleUserAccessing(targetPos, target);
                 return;
             }
 
-            if (!CanAccess(sourceTileEntity, targetTileEntity, targetPos)) {
+            if (!CanAccess(source, target, targetPos)) {
                 GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
                 return;
             }
-
-            var source = sourceTileEntity as TileEntityLootContainer;
-            var target = targetTileEntity as TileEntityLootContainer;
 
             try {
                 var totalItemsTransferred = 0;
@@ -200,8 +194,7 @@ namespace RoboticInbox {
                 }
                 if (totalItemsTransferred > 0) {
                     target.items = StackSortUtil.CombineAndSortStacks(target.items);
-                    ThreadManager.StartCoroutine(ShowTemporaryText(2, targetPos, targetTileEntity, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
-                    GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_close", AudioRolloffMode.Logarithmic, 5);
+                    HandleTransferred(targetPos, target, totalItemsTransferred);
                 }
             } catch (Exception e) {
                 log.Error("encountered issues organizing with Inbox", e);
@@ -211,18 +204,95 @@ namespace RoboticInbox {
             }
         }
 
-        private static IEnumerator ShowTemporaryText(float seconds, Vector3i pos, TileEntity entity, string text) {
-            if (entity.GetTileEntityType() == TileEntityType.SecureLootSigned) {
-                var container = entity as TileEntitySecureLootContainerSigned;
-                if (!OriginalText.ContainsKey(pos)) {
-                    OriginalText.Add(pos, container.GetText());
-                }
-                container.SetText(text);
-                yield return new WaitForSeconds(seconds);
-                if (OriginalText.TryGetValue(pos, out var originalText)) {
-                    OriginalText.Remove(pos);
-                    container.SetText(originalText);
-                }
+        private static bool CanAccess(TileEntity source, TileEntity target, Vector3i targetPos) {
+            var sourceIsLockable = ToLock(source, out var sourceLock);
+            var targetIsLockable = ToLock(target, out var targetLock);
+
+            if (!targetIsLockable) {
+                return true;
+            }
+
+            if (!targetLock.IsLocked()) {
+                return true;
+            }
+
+            // so target is both lockable and currently locked...
+
+            if (!targetLock.HasPassword()) {
+                HandleTargetLockedWithoutPassword(targetPos, target);
+                return false;
+            }
+
+            if (!sourceIsLockable || !sourceLock.IsLocked()) {
+                HandleTargetLockedWhileSourceIsNot(targetPos, target);
+                return false;
+            }
+
+            if (sourceLock.GetPassword().Equals(targetLock.GetPassword())) {
+                return true;
+            }
+
+            HandlePasswordMismatch(targetPos, target);
+            return false;
+        }
+
+        private static void HandleUserAccessing(Vector3i pos, TileEntity target) {
+            switch (target) {
+                case TileEntitySecureLootContainerSigned signedContainer:
+                    ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Currently In Use"));
+                    break;
+            }
+            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+        }
+
+        private static void HandleTargetLockedWithoutPassword(Vector3i pos, TileEntity target) {
+            switch (target) {
+                case TileEntitySecureLootContainerSigned signedContainer:
+                    ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Locked and has no password"));
+                    break;
+            }
+            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+        }
+
+        private static void HandleTargetLockedWhileSourceIsNot(Vector3i pos, TileEntity target) {
+            switch (target) {
+                case TileEntitySecureLootContainerSigned signedContainer:
+                    ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Locked but Inbox isn't"));
+                    break;
+            }
+            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+        }
+
+        private static void HandlePasswordMismatch(Vector3i pos, TileEntity target) {
+            switch (target) {
+                case TileEntitySecureLootContainerSigned signedContainer:
+                    ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Passwords Don't match"));
+                    break;
+            }
+            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+        }
+
+        private static void HandleTransferred(Vector3i pos, TileEntityLootContainer target, int totalItemsTransferred) {
+            switch (target) {
+                case TileEntitySecureLootContainerSigned signedContainer:
+                    // target.GetTileEntityType() == TileEntityType.SecureLootSigned
+                    ThreadManager.StartCoroutine(ShowTemporaryText(2, signedContainer, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
+                    break;
+            }
+            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_close", AudioRolloffMode.Logarithmic, 5);
+        }
+
+        private static IEnumerator ShowTemporaryText(float seconds, TileEntitySecureLootContainerSigned container, string text) {
+            log.Debug("called coroutine");
+
+            var originalText = container.GetText();
+            container.SetText(text, true); // update with new text (and sync to players)
+
+            // update server with original text again in case of shutdown or container destroy before yield completes
+            container.SetText(originalText, false); // update with original text (and do NOT sync to players)
+            yield return new WaitForSeconds(seconds);
+            if (container != null) {
+                container.SetText(container.GetText(), true); // sync original text to players
             }
         }
 
@@ -243,38 +313,6 @@ namespace RoboticInbox {
             }
         }
         */
-
-        private static bool CanAccess(TileEntity source, TileEntity target, Vector3i targetPos) {
-            var sourceIsLockable = ToLock(source, out var sourceLock);
-            var targetIsLockable = ToLock(target, out var targetLock);
-
-            if (!targetIsLockable) {
-                return true;
-            }
-
-            if (!targetLock.IsLocked()) {
-                return true;
-            }
-
-            // so target is both lockable and currently locked...
-
-            if (!targetLock.HasPassword()) {
-                ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, target, "Can't Distribute: Locked and has no password"));
-                return false;
-            }
-
-            if (!sourceIsLockable || !sourceLock.IsLocked()) {
-                ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, target, "Can't Distribute: Locked but Inbox isn't"));
-                return false;
-            }
-
-            if (sourceLock.GetPassword().Equals(targetLock.GetPassword())) {
-                return true;
-            }
-
-            ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, target, "Can't Distribute: Passwords Don't match"));
-            return false;
-        }
 
         private static bool TryCastAsContainer(TileEntity entity, out TileEntityLootContainer typed) {
             if (entity != null && (

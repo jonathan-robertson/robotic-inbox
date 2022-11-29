@@ -46,6 +46,8 @@ The `Secure Robotic Inbox` has certain requirements depending on the state of th
 
 ⚠️ Using `Writable Storage Boxes` will make configuring your storage area far easier, thanks to the feedback text that will appear when the Inbox attempts to interact with them.
 
+> ℹ️ In versions prior to 1.3.0, the original text on Writable Storage Boxes could be permanently lost if the temporary text was showing while the last remaining player in the area logged out or the server restarted. As of version 1.3.0 and beyond, this is no longer an issue.
+
 If the following requirements aren't met, the Inbox will have to skip interactions with the target containers until the necessary adjustments are made:
 
 1. containers not placed by players (ex: POI containers) are ignored.
