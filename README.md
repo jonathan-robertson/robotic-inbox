@@ -4,6 +4,7 @@
 
 - [Robotic Inbox](#robotic-inbox)
   - [Summary](#summary)
+  - [Performance Considerations](#performance-considerations)
   - [Auto-Sorting](#auto-sorting)
   - [Placement/Configuration Requirements](#placementconfiguration-requirements)
   - [Compatibility](#compatibility)
@@ -12,9 +13,18 @@
 
 7 Days to Die modlet: A special container that automatically sorts and distributes items to other nearby storage containers.
 
+## Performance Considerations
+
+As you might imagine, interacting instantly with multiple containers, sorting them, and distributing items to them could all be very taxing on the system.
+
+But your performance should be stellar - here are some things to consider and some things this mod intentionally does to keep game servers running smoothly:
+
+1. Container data is already processed server-side in 7 days to die. This means that adjustments to storage are *most* performant on the server's end rather than on the client's end and this approach actually reduces networking calls vs players organizing/stacking items themselves.
+2. Container organization is run on each box within range via a *concurrent* loop. This ensures that as inboxes are working through your players' containers, the server can still process other tasks and avoid lagging.
+
 ## Auto-Sorting
 
-> 📝 Players will find this information in their journals under `Robotic Inbox (1/2) [MOD]`
+> 📝 Players will find this information in their journals under `Robotic Inbox (General Info) [MOD]`
 
 The `Secure Robotic Inbox` is a new block meant to streamline item/resource organization within a base and help you to get back into the action as quickly as possible.
 
@@ -30,7 +40,7 @@ This new Inbox can be crafted at the Workbench or found for sale by a trader whe
 
 ## Placement/Configuration Requirements
 
-> 📝 Players will find this information in their journals under `Robotic Inbox (2/2) [MOD]`
+> 📝 Players will find this information in their journals under `Robotic Inbox (Security Info) [MOD]`
 
 The `Secure Robotic Inbox` has certain requirements depending on the state of the containers it interacts with.
 
@@ -40,10 +50,10 @@ If the following requirements aren't met, the Inbox will have to skip interactio
 
 1. containers not placed by players (ex: POI containers) are ignored.
 2. player backpacks and vehicles are ignored.
-3. both Inbox and target container must be within the same LCB.
-4. target container must be within 5 meters of Inbox.
+3. both Inbox and target container must be within the same LCB area.
+4. target container must be within 5 meters of Inbox, both horizontally and vertically (imagine a cube 11x11 in size with the inbox at the center).
 5. if target container is locked, Inbox must also be lockable, in a locked state, and set to the same password as target container.
 
 ## Compatibility
 
-- Server-side mod only: does not work on client's end and client does not need to download anything
+- Server-side mod only: client does not need to download anything, but this is not expected to work in single-player or locally hosted games

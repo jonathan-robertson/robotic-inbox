@@ -18,8 +18,6 @@ namespace RoboticInbox {
 
         internal static void OnGameStartDone() {
             try {
-                //log.debugMode = true; // TODO: disable this later
-
                 InboxBlockId = Block.nameIdMapping.GetIdForName("cntRoboticInbox");
                 SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureRoboticInbox");
 
@@ -35,14 +33,14 @@ namespace RoboticInbox {
             log.Debug($"Distribute called for tile entity at {sourcePos}");
             var source = GameManager.Instance.World.GetTileEntity(clrIdx, sourcePos);
             if (source == null || source.blockValue.Block == null) {
-                log.Warn($"TileEntity not found at {sourcePos}");
+                log.Debug($"TileEntity not found at {sourcePos}");
                 return;
             }
-            if (!IsRoboticInbox(source.blockValue.Block.blockID)) {
-                return;
+            if (SecureInboxBlockId != source.blockValue.Block.blockID) {
+                return; // only focus on robotic inbox blocks which are not broken
             }
             log.Debug($"TileEntity block id found to match {(SecureInboxBlockId != source.blockValue.Block.blockID ? InboxBlockId : SecureInboxBlockId)}");
-            if (!ToContainer(source, out var sourceContainer)) {
+            if (!TryCastAsContainer(source, out var sourceContainer)) {
                 log.Debug($"TileEntity at {sourcePos} could not be converted into a TileEntityLootContainer.");
                 return;
             }
@@ -52,27 +50,12 @@ namespace RoboticInbox {
             }
 
             // Limit min/max to only points **within** the same LCB as the source
-            if (!GetBoundsWithinLandClaim(sourcePos, out var min, out var max)) {
-                log.Debug($"GetBoundsWithinLandClaim found that the source position was not within a land claim");
+            if (!GetBoundsWithinWorldAndLandClaim(sourcePos, out var min, out var max)) {
+                log.Debug($"GetBoundsWithinWorldAndLandClaim found that the source position was not within a land claim");
                 return; // source pos was not within a land claim
             }
-            log.Debug($"GetBoundsWithinLandClaim returned min: {min}, max: {max}");
-            Vector3i targetPos;
-            for (int x = min.x; x <= max.x; x++) {
-                targetPos.x = x;
-                for (int y = min.y; y <= max.y; y++) {
-                    targetPos.y = y;
-                    for (int z = min.z; z <= max.z; z++) {
-                        targetPos.z = z;
-                        if (targetPos != sourcePos) { // avoid targeting self (duh)
-                            var target = GameManager.Instance.World.GetTileEntity(clrIdx, targetPos);
-                            if (VerifyContainer(target, targetPos)) {
-                                Distribute(source, target, targetPos);
-                            }
-                        }
-                    }
-                }
-            }
+            log.Debug($"GetBoundsWithinWorldAndLandClaim returned min: {min}, max: {max}");
+            ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, source, min, max));
         }
 
         internal static bool TryGetActiveLcbCoordsContainingPos(Vector3i sourcePos, out Vector3i landClaimPos) {
@@ -99,21 +82,75 @@ namespace RoboticInbox {
             return SecureInboxBlockId == blockId || InboxBlockId == blockId;
         }
 
-        private static bool GetBoundsWithinLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
+        private static bool GetBoundsWithinWorldAndLandClaim(Vector3i source, out Vector3i min, out Vector3i max) {
             min = max = default;
             if (!TryGetActiveLcbCoordsContainingPos(source, out var lcb)) {
                 return false;
             }
-            min.x = Utils.FastMax(source.x - InboxRange, lcb.x - LandClaimRadius);
-            min.z = Utils.FastMax(source.z - InboxRange, lcb.z - LandClaimRadius);
-            min.y = Utils.FastMax(source.y - InboxRange, yMin);
-            max.x = Utils.FastMin(source.x + InboxRange, lcb.x + LandClaimRadius);
-            max.z = Utils.FastMin(source.z + InboxRange, lcb.z + LandClaimRadius);
-            max.y = Utils.FastMin(source.y + InboxRange, yMax);
+
+            // The following logic comes from World.ClampToValidWorldPos (mostly).
+            // May need to re-assess this code if TFP change it in the future.
+            var _world = GameManager.Instance.World;
+            _world.GetWorldExtent(out var _minMapSize, out var _maxMapSize);
+            if (GamePrefs.GetString(EnumGamePrefs.GameWorld) == "Navezgane") {
+                _minMapSize = new Vector3i(-2400, _minMapSize.y, -2400);
+                _maxMapSize = new Vector3i(2400, _maxMapSize.y, 2400);
+            } else if (!GameUtils.IsPlaytesting()) {
+                _minMapSize = new Vector3i(_minMapSize.x + 320, _minMapSize.y, _minMapSize.z + 320);
+                _maxMapSize = new Vector3i(_maxMapSize.x - 320, _maxMapSize.y, _maxMapSize.z - 320);
+            }
+
+            min.x = FastMax(source.x - InboxRange, lcb.x - LandClaimRadius, _minMapSize.x);
+            min.z = FastMax(source.z - InboxRange, lcb.z - LandClaimRadius, _minMapSize.z);
+            min.y = FastMax(source.y - InboxRange, yMin, _minMapSize.y);
+            max.x = FastMin(source.x + InboxRange, lcb.x + LandClaimRadius, _maxMapSize.x);
+            max.z = FastMin(source.z + InboxRange, lcb.z + LandClaimRadius, _maxMapSize.z);
+            max.y = FastMin(source.y + InboxRange, yMax, _maxMapSize.y);
             return true;
         }
 
-        private static void Distribute(TileEntity sourceTileEntity, TileEntity targetTileEntity, Vector3i targetPos) {
+        public static int FastMax(int v1, int v2, int v3) {
+            return Utils.FastMax(v1, Utils.FastMax(v2, v3));
+        }
+
+        public static int FastMin(int v1, int v2, int v3) {
+            return Utils.FastMin(v1, Utils.FastMin(v2, v3));
+        }
+
+        private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntity source, Vector3i min, Vector3i max) {
+            Vector3i targetPos;
+            for (int x = min.x; x <= max.x; x++) {
+                targetPos.x = x;
+                for (int y = min.y; y <= max.y; y++) {
+                    targetPos.y = y;
+                    for (int z = min.z; z <= max.z; z++) {
+                        targetPos.z = z;
+                        if (targetPos != sourcePos) { // avoid targeting self (duh)
+                            var target = GameManager.Instance.World.GetTileEntity(clrIdx, targetPos);
+                            if (VerifyContainer(target, out var targetContainer)) {
+                                yield return null; // free up frames just before each distribute
+                                Distribute(source, target, targetContainer, targetPos);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static bool VerifyContainer(TileEntity entity, out TileEntityLootContainer tileEntityLootContainer) {
+            return TryCastAsContainer(entity, out tileEntityLootContainer)
+                && tileEntityLootContainer.bPlayerStorage
+                && !tileEntityLootContainer.bPlayerBackpack
+                && !IsRoboticInbox(entity.blockValue.Block.blockID);
+        }
+
+        private static void Distribute(TileEntity sourceTileEntity, TileEntity targetTileEntity, TileEntityLootContainer targetContainer, Vector3i targetPos) {
+            if (targetContainer.IsUserAccessing()) {
+                ThreadManager.StartCoroutine(ShowTemporaryText(3, targetPos, targetTileEntity, "Can't Distribute: Currently In Use"));
+                GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+                return;
+            }
+
             if (!CanAccess(sourceTileEntity, targetTileEntity, targetPos)) {
                 GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
                 return;
@@ -172,22 +209,6 @@ namespace RoboticInbox {
                 source.SetUserAccessing(false);
                 target.SetUserAccessing(false);
             }
-        }
-
-        private static bool VerifyContainer(TileEntity entity, Vector3i pos) {
-            var targetIsContainer = ToContainer(entity, out var targetContainer);
-            if (!targetIsContainer ||
-                targetContainer.bPlayerBackpack ||
-                !targetContainer.bPlayerStorage ||
-                IsRoboticInbox(entity.blockValue.Block.blockID)) {
-                return false;
-            }
-            if (targetContainer.IsUserAccessing()) {
-                ThreadManager.StartCoroutine(ShowTemporaryText(3, pos, entity, "Can't Distribute: Currently In Use"));
-                GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
-                return false;
-            }
-            return true;
         }
 
         private static IEnumerator ShowTemporaryText(float seconds, Vector3i pos, TileEntity entity, string text) {
@@ -255,7 +276,7 @@ namespace RoboticInbox {
             return false;
         }
 
-        private static bool ToContainer(TileEntity entity, out TileEntityLootContainer typed) {
+        private static bool TryCastAsContainer(TileEntity entity, out TileEntityLootContainer typed) {
             if (entity != null && (
                 entity.GetTileEntityType() == TileEntityType.Loot ||
                 entity.GetTileEntityType() == TileEntityType.SecureLoot ||
