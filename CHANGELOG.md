@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add console command to toggle debug mode
 - fix map bounds check
 - update formatting to align with csharp standards
+- update inbox to no longer be terrain decoration
 
 ## [1.3.0] - 2022-11-29
 
