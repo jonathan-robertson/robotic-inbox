@@ -1,17 +1,31 @@
 ﻿using HarmonyLib;
+using System;
 using System.Reflection;
 
-namespace RoboticInbox {
-    public class ModApi : IModApi {
-        private static readonly ModLog<ModApi> log = new ModLog<ModApi>();
-        public void InitMod(Mod _modInstance) {
-            //log.debugMode = true;
-            log.Debug("Mod Loading");
-            Harmony harmony = new Harmony(GetType().ToString());
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+namespace RoboticInbox
+{
+    public class ModApi : IModApi
+    {
+        private static readonly ModLog<ModApi> _log = new ModLog<ModApi>();
 
-            ModEvents.GameStartDone.RegisterHandler(StorageManager.OnGameStartDone);
-            log.Debug("Mod Loaded");
+        public static bool DebugMode { get; set; } = false;
+
+        public void InitMod(Mod _modInstance)
+        {
+            new Harmony(GetType().ToString()).PatchAll(Assembly.GetExecutingAssembly());
+            ModEvents.GameStartDone.RegisterHandler(OnGameStartDone);
+        }
+
+        private void OnGameStartDone()
+        {
+            try
+            {
+                StorageManager.OnGameStartDone();
+            }
+            catch (Exception e)
+            {
+                _log.Error("OnGameStartDone Failed", e);
+            }
         }
     }
 }
