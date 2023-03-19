@@ -37,6 +37,7 @@ namespace RoboticInbox
             }
             if (SecureInboxBlockId != source.blockValue.Block.blockID)
             {
+                _log.Debug($"SecureInboxBlockId != source.blockValue.Block.blockID at {sourcePos}");
                 return; // only focus on robotic inbox blocks which are not broken
             }
             _log.Debug($"TileEntity block id found to match {(SecureInboxBlockId != source.blockValue.Block.blockID ? InboxBlockId : SecureInboxBlockId)}");
@@ -98,24 +99,14 @@ namespace RoboticInbox
             {
                 return false;
             }
+            _log.Debug($"Land Claim containing {source} was found at {lcb}");
 
-            // The following logic comes from World.ClampToValidWorldPos (mostly).
-            // May need to re-assess this code if TFP change it in the future.
             if (!GameManager.Instance.World.GetWorldExtent(out var _minMapSize, out var _maxMapSize))
             {
-                _log.Debug("Typical map world extent does not seem to be present; expecting map to be playtesting or Navezgane.");
+                _log.Warn("World.GetWorldExtent failed when checking for limits; this is not expected and may indicate an error.");
+                return false;
             }
-            if (GamePrefs.GetString(EnumGamePrefs.GameWorld) == "Navezgane")
-            {
-                _minMapSize = new Vector3i(-2400, _minMapSize.y, -2400);
-                _maxMapSize = new Vector3i(2400, _maxMapSize.y, 2400);
-            }
-            else if (!GameUtils.IsPlaytesting())
-            {
-                _minMapSize = new Vector3i(_minMapSize.x + 320, _minMapSize.y, _minMapSize.z + 320);
-                _maxMapSize = new Vector3i(_maxMapSize.x - 320, _maxMapSize.y, _maxMapSize.z - 320);
-            }
-            _log.Debug($"minMapSize: {_minMapSize}, maxMapSize: {_maxMapSize}");
+            _log.Debug($"minMapSize: {_minMapSize}, maxMapSize: {_maxMapSize}, actualMapSize: {_maxMapSize - _minMapSize}");
 
             min.x = FastMax(source.x - InboxRange, lcb.x - LandClaimRadius, _minMapSize.x);
             min.z = FastMax(source.z - InboxRange, lcb.z - LandClaimRadius, _minMapSize.z);
