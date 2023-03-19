@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2023-03-19
+
+- add console command to toggle debug mode
+- fix map bounds check
+- update formatting to align with csharp standards
+- update inbox names for block naming standards
+- update inbox to no longer be terrain decoration
+- update inbox to no longer default rotate on face
+
 ## [1.3.0] - 2022-11-29
 
 - fix issue causing container text loss

@@ -11,9 +11,9 @@
             <property name="StabilitySupport" value="true" />
             <property name="Shape" value="New" />
             <property name="Texture" value="8,8,540,8,536,8" />
-            <property name="IsTerrainDecoration" value="true" />
+            <property name="IsTerrainDecoration" value="false" />
             <property name="Model" value="poi_part_helper" />
-            <property name="HandleFace" value="Bottom" />
+            <!-- <property name="HandleFace" value="Bottom" /> -->
             <property name="ImposterExclude" value="true" />
             <property name="Collide" value="movement,melee,bullet,arrow,rocket" />
             <property name="LootList" value="playerStorage" />
@@ -33,7 +33,7 @@
             <property name="FilterTags" value="MC_playerBlocks,SC_decor" />
         </block>
         <block name="cntRoboticInbox">
-            <property name="CreativeMode" value="Dev" />
+            <property name="CreativeMode" value="Test" />
             <property name="Class" value="Loot" />
             <property name="SellableToTrader" value="false" />
             <property name="CustomIcon" value="poiPartHelper" />
@@ -42,9 +42,9 @@
             <property name="Shape" value="New" />
             <property name="Texture" value="8,8,540,8,536,8" />
             <property name="Model" value="poi_part_helper" />
-            <property name="HandleFace" value="Bottom" />
+            <!-- <property name="HandleFace" value="Bottom" /> -->
             <property name="ImposterExclude" value="true" />
-            <property name="IsTerrainDecoration" value="true" />
+            <property name="IsTerrainDecoration" value="false" />
             <property name="LootList" value="playerStorage" />
             <property class="RepairItems">
                 <property name="resourceForgedIron" value="6" />
