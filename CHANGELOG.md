@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update formatting to align with csharp standards
 - update inbox names for block naming standards
 - update inbox to no longer be terrain decoration
+- update inbox to no longer default rotate on face
 
 ## [1.3.0] - 2022-11-29
 
