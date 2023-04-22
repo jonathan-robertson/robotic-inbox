@@ -52,17 +52,46 @@ namespace RoboticInbox
                 return;
             }
 
-            // Limit min/max to only points **within** the same LCB as the source
-            if (!GetBoundsWithinWorldAndLandClaim(sourcePos, out var min, out var max))
-            {
-                _log.Debug($"GetBoundsWithinWorldAndLandClaim found that the source position was not within a land claim");
-                return; // source pos was not within a land claim
-            }
-            _log.Debug($"GetBoundsWithinWorldAndLandClaim returned min: {min}, max: {max}");
+            GetBoundsWithinWorldAndLandClaim(sourcePos, out var min, out var max);
             _ = ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, sourceContainer, min, max));
         }
 
-        internal static bool TryGetActiveLcbCoordsContainingPos(Vector3i sourcePos, out Vector3i landClaimPos)
+        private static void GetBoundsWithinWorldAndLandClaim(Vector3i source, out Vector3i min, out Vector3i max)
+        {
+            min = max = default;
+
+            if (!GameManager.Instance.World.GetWorldExtent(out var _minMapSize, out var _maxMapSize))
+            {
+                _log.Warn("World.GetWorldExtent failed when checking for limits; this is not expected and may indicate an error.");
+                return;
+            }
+            _log.Debug($"minMapSize: {_minMapSize}, maxMapSize: {_maxMapSize}, actualMapSize: {_maxMapSize - _minMapSize}");
+
+            if (TryGetActiveLandClaimPosContaining(source, out var lcbPos))
+            {
+                _log.Debug($"Land Claim was found containing {source} (pos: {lcbPos}); clamping to world and land claim coordinates.");
+                min.x = FastMax(source.x - InboxRange, lcbPos.x - LandClaimRadius, _minMapSize.x);
+                min.z = FastMax(source.z - InboxRange, lcbPos.z - LandClaimRadius, _minMapSize.z);
+                min.y = FastMax(source.y - InboxRange, yMin, _minMapSize.y);
+                max.x = FastMin(source.x + InboxRange, lcbPos.x + LandClaimRadius, _maxMapSize.x);
+                max.z = FastMin(source.z + InboxRange, lcbPos.z + LandClaimRadius, _maxMapSize.z);
+                max.y = FastMin(source.y + InboxRange, yMax, _maxMapSize.y);
+                _log.Debug($"clampedMin: {min}, clampedMax: {max}.");
+                return;
+            }
+
+            _log.Debug($"Land Claim not found containing {source}; clamping to world coordinates only.");
+            min.x = Utils.FastMax(source.x - InboxRange, _minMapSize.x);
+            min.z = Utils.FastMax(source.z - InboxRange, _minMapSize.z);
+            min.y = FastMax(source.y - InboxRange, yMin, _minMapSize.y);
+            max.x = Utils.FastMin(source.x + InboxRange, _maxMapSize.x);
+            max.z = Utils.FastMin(source.z + InboxRange, _maxMapSize.z);
+            max.y = FastMin(source.y + InboxRange, yMax, _maxMapSize.y);
+            _log.Debug($"clampedMin: {min}, clampedMax: {max}.");
+            return;
+        }
+
+        internal static bool TryGetActiveLandClaimPosContaining(Vector3i sourcePos, out Vector3i lcbPos)
         {
             var _world = GameManager.Instance.World;
             foreach (var kvp in GameManager.Instance.persistentPlayers.Players)
@@ -71,51 +100,20 @@ namespace RoboticInbox
                 {
                     continue; // this player has been offline too long
                 }
-                foreach (var lcb in kvp.Value.GetLandProtectionBlocks())
+                foreach (var pos in kvp.Value.GetLandProtectionBlocks())
                 {
-                    if (sourcePos.x >= lcb.x - LandClaimRadius &&
-                        sourcePos.x <= lcb.x + LandClaimRadius &&
-                        sourcePos.z >= lcb.z - LandClaimRadius &&
-                        sourcePos.z <= lcb.z + LandClaimRadius)
+                    if (sourcePos.x >= pos.x - LandClaimRadius &&
+                        sourcePos.x <= pos.x + LandClaimRadius &&
+                        sourcePos.z >= pos.z - LandClaimRadius &&
+                        sourcePos.z <= pos.z + LandClaimRadius)
                     {
-                        landClaimPos = lcb;
+                        lcbPos = pos;
                         return true;
                     }
                 }
             }
-            landClaimPos = default;
+            lcbPos = default;
             return false;
-        }
-
-        internal static bool IsRoboticInbox(int blockId)
-        {
-            return SecureInboxBlockId == blockId || InboxBlockId == blockId;
-        }
-
-        private static bool GetBoundsWithinWorldAndLandClaim(Vector3i source, out Vector3i min, out Vector3i max)
-        {
-            min = max = default;
-            if (!TryGetActiveLcbCoordsContainingPos(source, out var lcb))
-            {
-                return false;
-            }
-            _log.Debug($"Land Claim containing {source} was found at {lcb}");
-
-            if (!GameManager.Instance.World.GetWorldExtent(out var _minMapSize, out var _maxMapSize))
-            {
-                _log.Warn("World.GetWorldExtent failed when checking for limits; this is not expected and may indicate an error.");
-                return false;
-            }
-            _log.Debug($"minMapSize: {_minMapSize}, maxMapSize: {_maxMapSize}, actualMapSize: {_maxMapSize - _minMapSize}");
-
-            min.x = FastMax(source.x - InboxRange, lcb.x - LandClaimRadius, _minMapSize.x);
-            min.z = FastMax(source.z - InboxRange, lcb.z - LandClaimRadius, _minMapSize.z);
-            min.y = FastMax(source.y - InboxRange, yMin, _minMapSize.y);
-            max.x = FastMin(source.x + InboxRange, lcb.x + LandClaimRadius, _maxMapSize.x);
-            max.z = FastMin(source.z + InboxRange, lcb.z + LandClaimRadius, _maxMapSize.z);
-            max.y = FastMin(source.y + InboxRange, yMax, _maxMapSize.y);
-            _log.Debug($"clampedMin: {min}, clampedMax: {max}");
-            return true;
         }
 
         public static int FastMax(int v1, int v2, int v3)
@@ -130,6 +128,10 @@ namespace RoboticInbox
 
         private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntityLootContainer source, Vector3i min, Vector3i max)
         {
+            // TODO: optimize this
+            // TODO: possibly check at most... 1 slice of x at a time?
+            //  see how much time it will take to yield after each vertical cross-section of x/z at a time
+            //  test by returning entire map for clamped range and see if it halts zombies
             Vector3i targetPos;
             for (var x = min.x; x <= max.x; x++)
             {
@@ -160,6 +162,11 @@ namespace RoboticInbox
                 && tileEntityLootContainer.bPlayerStorage
                 && !tileEntityLootContainer.bPlayerBackpack
                 && !IsRoboticInbox(entity.blockValue.Block.blockID);
+        }
+
+        internal static bool IsRoboticInbox(int blockId)
+        {
+            return SecureInboxBlockId == blockId || InboxBlockId == blockId;
         }
 
         private static void Distribute(TileEntityLootContainer source, TileEntityLootContainer target, Vector3i targetPos)
