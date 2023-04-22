@@ -69,15 +69,13 @@
     <Compile Include="ConsoleCmdRoboticInbox.cs" />
     <Compile Include="ModApi.cs" />
     <Compile Include="ModLog.cs" />
-    <Compile Include="NetPackageSetBlock_Patches.cs" />
-    <Compile Include="GameManager_Patches.cs" />
+    <Compile Include="Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StorageManager.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent />
   </PropertyGroup>
 </Project>
