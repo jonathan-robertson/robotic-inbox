@@ -5,15 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [TODO]
-
-- add settings?
-- support inbox spanning multiple land claims if owned by the same player
-- update to work outside of land claim
-
-## [UNRELEASED]
+## [1.4.0] - 2023-04-22
 
 - take advantage of land claim if one is present
+- update inbox to work outside of land claims
 
 ## [1.3.1] - 2023-03-19
 
