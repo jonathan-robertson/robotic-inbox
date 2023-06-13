@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.0] - UNRELEASED
 
+- update console command for a21
 - update to a21 modinfo file format
 - update to a21 references
 
