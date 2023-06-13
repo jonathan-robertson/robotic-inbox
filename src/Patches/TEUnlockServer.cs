@@ -3,7 +3,7 @@ using System;
 
 namespace RoboticInbox
 {
-    [HarmonyPatch(typeof(GameManager), "TEUnlockServer", new Type[] { typeof(int), typeof(Vector3i), typeof(int) })]
+    [HarmonyPatch(typeof(GameManager), "TEUnlockServer")]
     internal class GameManager_TEUnlockServer_Patch
     {
         private static readonly ModLog<GameManager_TEUnlockServer_Patch> _log = new ModLog<GameManager_TEUnlockServer_Patch>();
