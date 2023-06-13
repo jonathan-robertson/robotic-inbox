@@ -5,20 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## TODO
-
-fix on-close, game does not think this has a matching SecureInboxBlockId
-
-```log
-2023-06-13T01:55:14 327.679 INF [RoboticInbox.StorageManager] DEBUG: SecureInboxBlockId != source.blockValue.Block.blockID at 188, 77, 1106
-2023-06-13T01:55:18 331.628 INF [RoboticInbox.StorageManager] DEBUG: Distribute called for tile entity at 188, 77, 1106
-```
-
 ## [2.0.0] - 2023-06-13
 
-- optimize distribution coroutine
 - fix bug loading block ids on first launch
+- optimize distribution coroutine
 - update console command for a21
+- update flow from bottom to top
 - update patches for a21
 - update to a21 modinfo file format
 - update to a21 references

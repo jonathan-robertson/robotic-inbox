@@ -156,15 +156,15 @@ namespace RoboticInbox
             //  test by returning entire map for clamped range and see if it halts zombies
             var world = GameManager.Instance.World;
             Vector3i targetPos;
-            for (var x = min.x; x <= max.x; x++)
+            for (var y = min.y; y <= max.y; y++)
             {
-                targetPos.x = x;
-                for (var z = min.z; z <= max.z; z++)
+                targetPos.y = y;
+                for (var x = min.x; x <= max.x; x++)
                 {
-                    targetPos.z = z;
-                    for (var y = min.y; y <= max.y; y++)
+                    targetPos.x = x;
+                    for (var z = min.z; z <= max.z; z++)
                     {
-                        targetPos.y = y;
+                        targetPos.z = z;
                         if (targetPos != sourcePos) // avoid targeting self (duh)
                         {
                             var target = world.GetTileEntity(clrIdx, targetPos);
@@ -175,10 +175,9 @@ namespace RoboticInbox
                             }
                         }
                     }
-                    // TODO: test this (not yet tested as of 4/22)
-                    yield return null; // free up game frame after scanning each x/z column
+                    //yield return null; // [way too slow] free up game frame after scanning each y/x column
                 }
-                //yield return null; // free up game frame after scanning each x slice
+                yield return null; // free up game frame after scanning each y slice
             }
         }
 
