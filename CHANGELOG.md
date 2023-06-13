@@ -16,6 +16,8 @@ fix on-close, game does not think this has a matching SecureInboxBlockId
 
 ## [2.0.0] - 2023-06-13
 
+- optimize distribution coroutine
+- fix bug loading block ids on first launch
 - update console command for a21
 - update patches for a21
 - update to a21 modinfo file format

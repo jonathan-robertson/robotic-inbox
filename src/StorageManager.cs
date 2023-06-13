@@ -8,8 +8,11 @@ namespace RoboticInbox
     {
         private static readonly ModLog<StorageManager> _log = new ModLog<StorageManager>();
 
-        private static readonly int yMin = 0;
-        private static readonly int yMax = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
+        private const string ModMaintainer = "Kanaverum#8183";
+        private const string SupportLink = "https://discord.gg/tRJHSB9Uk7";
+
+        private const int yMin = 0;
+        private const int yMax = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
 
         public static int InboxBlockId { get; private set; }
         public static int SecureInboxBlockId { get; private set; }
@@ -18,12 +21,31 @@ namespace RoboticInbox
 
         internal static void OnGameStartDone()
         {
-            InboxBlockId = Block.nameIdMapping.GetIdForName("cntRoboticInbox");
-            SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureRoboticInbox");
+            if (!ConnectionManager.Instance.IsServer)
+            {
+                _log.Warn("Mod recognizes you as a client, so this locally installed mod will be inactive until you host a game.");
+                return;
+            }
+
+            _log.Info("Mod recognizes you as the host, so it will begin managing containers.");
+
+            _log.Info("Attempting to load block IDs for Mod.");
+            var roboticInbox = Block.GetBlockByName("cntRoboticInbox");
+            var secureRoboticInbox = Block.GetBlockByName("cntSecureRoboticInbox");
+            if (roboticInbox != null && secureRoboticInbox != null)
+            {
+                InboxBlockId = roboticInbox.blockID;
+                SecureInboxBlockId = secureRoboticInbox.blockID;
+                _log.Info($"InboxBlockId={InboxBlockId}; SecureInboxBlockId={SecureInboxBlockId}");
+            }
+            else
+            {
+                _log.Error($"InboxBlockId=FAILURE; SecureInboxBlockId=FAILURE; restarting the server will be necessary to fix this - otherwise please reach out to the mod maintainer {ModMaintainer} via {SupportLink}");
+            }
 
             var size = GameStats.GetInt(EnumGameStats.LandClaimSize);
             LandClaimRadius = (size % 2 == 1 ? size - 1 : size) / 2;
-            _log.Debug($"LandClaimRadius found to be {LandClaimRadius}m");
+            _log.Info($"LandClaimRadius found to be {LandClaimRadius}m");
         }
 
         internal static void Distribute(int clrIdx, Vector3i sourcePos)
@@ -132,19 +154,20 @@ namespace RoboticInbox
             // TODO: possibly check at most... 1 slice of x at a time?
             //  see how much time it will take to yield after each vertical cross-section of x/z at a time
             //  test by returning entire map for clamped range and see if it halts zombies
+            var world = GameManager.Instance.World;
             Vector3i targetPos;
             for (var x = min.x; x <= max.x; x++)
             {
                 targetPos.x = x;
-                for (var y = min.y; y <= max.y; y++)
+                for (var z = min.z; z <= max.z; z++)
                 {
-                    targetPos.y = y;
-                    for (var z = min.z; z <= max.z; z++)
+                    targetPos.z = z;
+                    for (var y = min.y; y <= max.y; y++)
                     {
-                        targetPos.z = z;
-                        if (targetPos != sourcePos)
-                        { // avoid targeting self (duh)
-                            var target = GameManager.Instance.World.GetTileEntity(clrIdx, targetPos);
+                        targetPos.y = y;
+                        if (targetPos != sourcePos) // avoid targeting self (duh)
+                        {
+                            var target = world.GetTileEntity(clrIdx, targetPos);
                             if (VerifyContainer(target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
@@ -152,7 +175,10 @@ namespace RoboticInbox
                             }
                         }
                     }
+                    // TODO: test this (not yet tested as of 4/22)
+                    yield return null; // free up game frame after scanning each x/z column
                 }
+                //yield return null; // free up game frame after scanning each x slice
             }
         }
 
