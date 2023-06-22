@@ -6,6 +6,7 @@
             <property name="EconomicValue" value="150" />
             <property name="TraderStageTemplate" value="electricTier1" />
             <property name="SellableToTrader" value="true" />
+            <property name="UnlockedBy" value="craftingRobotics" />
             <property name="Class" value="SecureLoot" />
             <property name="CustomIcon" value="poiPartHelper" />
             <property name="Material" value="Mmetal_weak" />

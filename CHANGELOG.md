@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - UNRELEASED
 
 - add electricTier1 trader stage requirement
+- add recipe unlock to robotics magazine
 - fix bug loading block ids on first launch
 - optimize distribution coroutine
 - update console command for a21
