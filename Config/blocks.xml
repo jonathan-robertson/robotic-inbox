@@ -4,6 +4,7 @@
             <property name="CreativeMode" value="Player" />
             <property name="Tags" value="door" />
             <property name="EconomicValue" value="150" />
+            <property name="TraderStageTemplate" value="electricTier1" />
             <property name="SellableToTrader" value="true" />
             <property name="Class" value="SecureLoot" />
             <property name="CustomIcon" value="poiPartHelper" />

@@ -5,14 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2023-06-13
+## TODO
 
+- test locks for security, etc.
+- test trader presence and trader stage
+- test recipe mechanics... consider if they should unlock in a specific magazine
+
+- 🪲 Notification Text Gets Stuck#30
+  - Immediately accessing container after push causes the notification text to stay that way.
+  - see `StorageManager.ShowTemporaryText`... seems SetText can't flip back if player is in the container (maybe it never could?)
+
+## [2.0.0] - UNRELEASED
+
+- add electricTier1 trader stage requirement
 - fix bug loading block ids on first launch
 - optimize distribution coroutine
 - update console command for a21
 - update flow from bottom to top
 - update patches for a21
-- update to a21 modinfo file format
+- update to a21 mod-info file format
 - update to a21 references
 
 ## [1.4.0] - 2023-04-22
