@@ -69,7 +69,7 @@
     <Compile Include="ConsoleCmdRoboticInbox.cs" />
     <Compile Include="ModApi.cs" />
     <Compile Include="ModLog.cs" />
-    <Compile Include="Patches\TEUnlockServer.cs" />
+    <Compile Include="Patches\NetPackageTELock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StorageManager.cs" />
   </ItemGroup>
