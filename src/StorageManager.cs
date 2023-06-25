@@ -245,8 +245,8 @@ namespace RoboticInbox
                 // TODO: do not work on server
                 //source.SetUserAccessing(true);
                 //target.SetUserAccessing(true);
-                MarkInUse(sourcePos, source.EntityId, source.entityId);
-                MarkInUse(targetPos, target.EntityId, source.entityId);
+                //MarkInUse(sourcePos, source.EntityId, source.entityId);
+                //MarkInUse(targetPos, target.EntityId, source.entityId);
 
                 for (var s = 0; s < source.items.Length; s++)
                 {
@@ -304,8 +304,8 @@ namespace RoboticInbox
                 // TODO: do not work on server
                 //source.SetUserAccessing(false);
                 //target.SetUserAccessing(false);
-                MarkNotInUse(sourcePos, source.EntityId);
-                MarkNotInUse(targetPos, target.EntityId);
+                //MarkNotInUse(sourcePos, source.EntityId);
+                //MarkNotInUse(targetPos, target.EntityId);
             }
         }
 

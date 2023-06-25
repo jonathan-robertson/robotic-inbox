@@ -8,7 +8,7 @@ namespace RoboticInbox
     {
         private static readonly ModLog<ModApi> _log = new ModLog<ModApi>();
 
-        public static bool DebugMode { get; set; } = true; // TODO: set to false before publish
+        public static bool DebugMode { get; set; } = false;
 
         public void InitMod(Mod _modInstance)
         {
