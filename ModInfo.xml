@@ -1,9 +1,8 @@
 <xml>
-    <ModInfo>
-        <Name value="Robotic Inbox" />
-        <Description value="A special container that automatically sorts and distributes items to other nearby storage containers." />
-        <Author value="Jonathan Robertson (Kanaverum)" />
-        <Version value="1.4.0" />
-        <Website value="https://github.com/jonathan-robertson/robotic-inbox" />
-    </ModInfo>
+    <Name value="kanaverum-robotic-inbox" />
+    <DisplayName value="Robotic Inbox" />
+    <Version value="2.0.0" />
+    <Description value="A special container that automatically sorts and distributes items to other nearby storage containers." />
+    <Author value="Jonathan Robertson (Kanaverum)" />
+    <Website value="https://github.com/jonathan-robertson/robotic-inbox" />
 </xml>

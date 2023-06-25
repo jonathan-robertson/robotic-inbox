@@ -1,9 +1,10 @@
 # Robotic Inbox
 
-[![🧪 Tested On](https://img.shields.io/badge/🧪%20Tested%20On-A20.6%20b9-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
+[![🧪 Tested On](https://img.shields.io/badge/🧪%20Tested%20On-A21%20b317-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
 
 - [Robotic Inbox](#robotic-inbox)
   - [Summary](#summary)
+    - [Support](#support)
   - [Performance Considerations](#performance-considerations)
   - [Auto-Sorting](#auto-sorting)
   - [Placement/Configuration Requirements](#placementconfiguration-requirements)
@@ -11,7 +12,11 @@
 
 ## Summary
 
-7 Days to Die modlet: A special container that automatically sorts and distributes items to other nearby storage containers.
+A special container that automatically sorts and distributes items to other nearby storage containers.
+
+### Support
+
+🗪 If you would like support for this mod, please feel free to reach out via [Discord](https://discord.gg/tRJHSB9Uk7).
 
 ## Performance Considerations
 

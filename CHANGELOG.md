@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2023-06-25
+
+- add electricTier1 trader stage requirement
+- add journal entry on login
+- add recipe unlock to robotics magazine
+- fix access text sync bug
+- fix bug loading block ids on first launch
+- fix item dup exploit
+- optimize distribution coroutine
+- update console command for a21
+- update flow from bottom to top
+- update patches for a21
+- update to a21 mod-info file format
+- update to a21 references
+
 ## [1.4.0] - 2023-04-22
 
 - take advantage of land claim if one is present

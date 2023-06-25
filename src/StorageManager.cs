@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RoboticInbox
@@ -8,22 +9,49 @@ namespace RoboticInbox
     {
         private static readonly ModLog<StorageManager> _log = new ModLog<StorageManager>();
 
-        private static readonly int yMin = 0;
-        private static readonly int yMax = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
+        private const string ModMaintainer = "Kanaverum#8183";
+        private const string SupportLink = "https://discord.gg/tRJHSB9Uk7";
+
+        private const int yMin = 0;
+        private const int yMax = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
+
+        public static string MessageTargetContainerInUse { get; private set; } = "Robotic Inbox was [ff8000]unable to organize this container[-] since you were using it.";
+        public static string SoundVehicleStorageOpen { get; private set; } = "vehicle_storage_open";
+        public static string SoundVehicleStorageClose { get; private set; } = "vehicle_storage_close";
 
         public static int InboxBlockId { get; private set; }
         public static int SecureInboxBlockId { get; private set; }
         public static int LandClaimRadius { get; private set; }
         public static int InboxRange { get; private set; } = 5;
+        public static Dictionary<Vector3i, Coroutine> ActiveCoroutines { get; private set; } = new Dictionary<Vector3i, Coroutine>();
 
         internal static void OnGameStartDone()
         {
-            InboxBlockId = Block.nameIdMapping.GetIdForName("cntRoboticInbox");
-            SecureInboxBlockId = Block.nameIdMapping.GetIdForName("cntSecureRoboticInbox");
+            if (!ConnectionManager.Instance.IsServer)
+            {
+                _log.Warn("Mod recognizes you as a client, so this locally installed mod will be inactive until you host a game.");
+                return;
+            }
+
+            _log.Info("Mod recognizes you as the host, so it will begin managing containers.");
+
+            _log.Info("Attempting to load block IDs for Mod.");
+            var roboticInbox = Block.GetBlockByName("cntRoboticInbox");
+            var secureRoboticInbox = Block.GetBlockByName("cntSecureRoboticInbox");
+            if (roboticInbox != null && secureRoboticInbox != null)
+            {
+                InboxBlockId = roboticInbox.blockID;
+                SecureInboxBlockId = secureRoboticInbox.blockID;
+                _log.Info($"InboxBlockId={InboxBlockId}; SecureInboxBlockId={SecureInboxBlockId}");
+            }
+            else
+            {
+                _log.Error($"InboxBlockId=FAILURE; SecureInboxBlockId=FAILURE; restarting the server will be necessary to fix this - otherwise please reach out to the mod maintainer {ModMaintainer} via {SupportLink}");
+            }
 
             var size = GameStats.GetInt(EnumGameStats.LandClaimSize);
             LandClaimRadius = (size % 2 == 1 ? size - 1 : size) / 2;
-            _log.Debug($"LandClaimRadius found to be {LandClaimRadius}m");
+            _log.Info($"LandClaimRadius found to be {LandClaimRadius}m");
         }
 
         internal static void Distribute(int clrIdx, Vector3i sourcePos)
@@ -46,14 +74,9 @@ namespace RoboticInbox
                 _log.Debug($"TileEntity at {sourcePos} could not be converted into a TileEntityLootContainer.");
                 return;
             }
-            if (sourceContainer.IsUserAccessing())
-            {
-                _log.Debug($"TileEntity at {sourcePos} is currently being accessed.");
-                return;
-            }
 
             GetBoundsWithinWorldAndLandClaim(sourcePos, out var min, out var max);
-            _ = ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, sourceContainer, min, max));
+            ActiveCoroutines.Add(sourcePos, ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, sourceContainer, min, max)));
         }
 
         private static void GetBoundsWithinWorldAndLandClaim(Vector3i source, out Vector3i min, out Vector3i max)
@@ -132,28 +155,32 @@ namespace RoboticInbox
             // TODO: possibly check at most... 1 slice of x at a time?
             //  see how much time it will take to yield after each vertical cross-section of x/z at a time
             //  test by returning entire map for clamped range and see if it halts zombies
+            var world = GameManager.Instance.World;
             Vector3i targetPos;
-            for (var x = min.x; x <= max.x; x++)
+            for (var y = min.y; y <= max.y; y++)
             {
-                targetPos.x = x;
-                for (var y = min.y; y <= max.y; y++)
+                targetPos.y = y;
+                for (var x = min.x; x <= max.x; x++)
                 {
-                    targetPos.y = y;
+                    targetPos.x = x;
                     for (var z = min.z; z <= max.z; z++)
                     {
                         targetPos.z = z;
-                        if (targetPos != sourcePos)
-                        { // avoid targeting self (duh)
-                            var target = GameManager.Instance.World.GetTileEntity(clrIdx, targetPos);
+                        if (targetPos != sourcePos) // avoid targeting self (duh)
+                        {
+                            var target = world.GetTileEntity(clrIdx, targetPos);
                             if (VerifyContainer(target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
-                                Distribute(source, targetContainer, targetPos);
+                                Distribute(source, sourcePos, targetContainer, targetPos);
                             }
                         }
                     }
+                    //yield return null; // [way too slow] free up game frame after scanning each y/x column
                 }
+                yield return null; // free up game frame after scanning each y slice
             }
+            _ = ActiveCoroutines.Remove(sourcePos);
         }
 
         private static bool VerifyContainer(TileEntity entity, out TileEntityLootContainer tileEntityLootContainer)
@@ -169,17 +196,45 @@ namespace RoboticInbox
             return SecureInboxBlockId == blockId || InboxBlockId == blockId;
         }
 
-        private static void Distribute(TileEntityLootContainer source, TileEntityLootContainer target, Vector3i targetPos)
+        private static bool CheckAndHandleInUse(TileEntityLootContainer source, Vector3i sourcePos, TileEntityLootContainer target, Vector3i targetPos)
         {
-            if (target.IsUserAccessing())
+            var entityIdInSourceContainer = GameManager.Instance.GetEntityIDForLockedTileEntity(source);
+            if (entityIdInSourceContainer != -1)
             {
-                HandleUserAccessing(targetPos, target);
+                _log.Trace($"player {entityIdInSourceContainer} is currently accessing source container at {sourcePos}; skipping");
+                GameManager.Instance.PlaySoundAtPositionServer(sourcePos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
+                return true;
+            }
+            var entityIdInTargetContainer = GameManager.Instance.GetEntityIDForLockedTileEntity(target);
+            if (entityIdInTargetContainer != -1)
+            {
+                _log.Trace($"player {entityIdInTargetContainer} is currently accessing target container at {targetPos}; skipping");
+                var clientInfo = ConnectionManager.Instance.Clients.ForEntityId(entityIdInTargetContainer);
+                if (clientInfo == null)
+                {
+                    GameManager.ShowTooltip(GameManager.Instance.World.GetPrimaryPlayer(), MessageTargetContainerInUse);
+                }
+                else
+                {
+                    clientInfo.SendPackage(NetPackageManager.GetPackage<NetPackageShowToolbeltMessage>().Setup(MessageTargetContainerInUse, SoundVehicleStorageOpen));
+                }
+                GameManager.Instance.PlaySoundAtPositionServer(targetPos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
+                return true;
+            }
+            return false;
+        }
+
+        private static void Distribute(TileEntityLootContainer source, Vector3i sourcePos, TileEntityLootContainer target, Vector3i targetPos)
+        {
+            if (CheckAndHandleInUse(source, sourcePos, target, targetPos))
+            {
+                _log.Trace($"returning early");
                 return;
             }
 
             if (!CanAccess(source, target, targetPos))
             {
-                GameManager.Instance.PlaySoundAtPositionServer(targetPos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+                GameManager.Instance.PlaySoundAtPositionServer(targetPos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
                 return;
             }
 
@@ -187,8 +242,11 @@ namespace RoboticInbox
             {
                 var totalItemsTransferred = 0;
 
-                source.SetUserAccessing(true);
-                target.SetUserAccessing(true);
+                // TODO: do not work on server
+                //source.SetUserAccessing(true);
+                //target.SetUserAccessing(true);
+                //MarkInUse(sourcePos, source.EntityId, source.entityId);
+                //MarkInUse(targetPos, target.EntityId, source.entityId);
 
                 for (var s = 0; s < source.items.Length; s++)
                 {
@@ -243,8 +301,11 @@ namespace RoboticInbox
             }
             finally
             {
-                source.SetUserAccessing(false);
-                target.SetUserAccessing(false);
+                // TODO: do not work on server
+                //source.SetUserAccessing(false);
+                //target.SetUserAccessing(false);
+                //MarkNotInUse(sourcePos, source.EntityId);
+                //MarkNotInUse(targetPos, target.EntityId);
             }
         }
 
@@ -286,17 +347,6 @@ namespace RoboticInbox
             return false;
         }
 
-        private static void HandleUserAccessing(Vector3i pos, TileEntity target)
-        {
-            switch (target)
-            {
-                case TileEntitySecureLootContainerSigned signedContainer:
-                    _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Currently In Use"));
-                    break;
-            }
-            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
-        }
-
         private static void HandleTargetLockedWithoutPassword(Vector3i pos, TileEntity target)
         {
             switch (target)
@@ -305,7 +355,7 @@ namespace RoboticInbox
                     _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Locked and has no password"));
                     break;
             }
-            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+            GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
         }
 
         private static void HandleTargetLockedWhileSourceIsNot(Vector3i pos, TileEntity target)
@@ -316,7 +366,7 @@ namespace RoboticInbox
                     _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Locked but Inbox isn't"));
                     break;
             }
-            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+            GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
         }
 
         private static void HandlePasswordMismatch(Vector3i pos, TileEntity target)
@@ -327,7 +377,7 @@ namespace RoboticInbox
                     _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Passwords Don't match"));
                     break;
             }
-            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_open", AudioRolloffMode.Logarithmic, 5);
+            GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
         }
 
         private static void HandleTransferred(Vector3i pos, TileEntityLootContainer target, int totalItemsTransferred)
@@ -339,7 +389,7 @@ namespace RoboticInbox
                     _ = ThreadManager.StartCoroutine(ShowTemporaryText(2, signedContainer, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
                     break;
             }
-            GameManager.Instance.PlaySoundAtPositionServer(pos, "vehicle_storage_close", AudioRolloffMode.Logarithmic, 5);
+            GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageClose, AudioRolloffMode.Logarithmic, 5);
         }
 
         private static IEnumerator ShowTemporaryText(float seconds, TileEntitySecureLootContainerSigned container, string text)
@@ -398,6 +448,18 @@ namespace RoboticInbox
             }
             typed = null;
             return false;
+        }
+
+        // TODO: as a safety precaution, lock source and target when transferring items between the two of them
+        private static void MarkInUse(Vector3i blockPos, int lootEntityId, int entityIdThatOpenedIt)
+        {
+            //GameManager.Instance.TELockServer(GameManager.Instance.World.ChunkCache.ClusterIdx, blockPos, -1, -2);
+        }
+
+        // TODO: after transfer, unlock source and target
+        private static void MarkNotInUse(Vector3i blockPos, int lootEntityId)
+        {
+            //GameManager.Instance.TEUnlockServer(GameManager.Instance.World.ChunkCache.ClusterIdx, blockPos, -1);
         }
     }
 }
