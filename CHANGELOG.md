@@ -7,10 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TODO
 
-- test locks for security, etc.
-- test trader presence and trader stage
-- test recipe mechanics... consider if they should unlock in a specific magazine
-
+- if one player is in a crate, and another player uses the inbox, the crate will keep its notice text
+  - should't this *not* update the crate? the Tile Entity should be in a locked state...
 - 🪲 Notification Text Gets Stuck#30
   - Immediately accessing container after push causes the notification text to stay that way.
   - see `StorageManager.ShowTemporaryText`... seems SetText can't flip back if player is in the container (maybe it never could?)
@@ -18,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - UNRELEASED
 
 - add electricTier1 trader stage requirement
+- add journal entry on login
 - add recipe unlock to robotics magazine
 - fix bug loading block ids on first launch
 - optimize distribution coroutine
