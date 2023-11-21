@@ -16,7 +16,7 @@ A special container that automatically sorts and distributes items to other near
 
 ### Support
 
-🗪 If you would like support for this mod, please feel free to reach out via [Discord](https://discord.gg/tRJHSB9Uk7).
+🗪 If you would like support for this mod, please feel free to reach out to me via [Discord](https://discord.gg/hYa2sNHXya) (my username is `kanaverum`).
 
 ## Performance Considerations
 
