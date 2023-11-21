@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.0] - 2023-11-21
 
+- update readme & binary with new support link
+- update readme with new setup guide
 - update to support a21.2 b30 (stable)
 
 ## [2.0.1] - 2023-06-30
