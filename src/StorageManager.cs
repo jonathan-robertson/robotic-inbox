@@ -263,7 +263,8 @@ namespace RoboticInbox
                             continue;
                         }
                         foundMatch = true;
-                        if (target.TryStackItem(t, source.items[s]))
+                        (var anyMoved, var allMoved) = target.TryStackItem(t, source.items[s]);
+                        if (allMoved)
                         {
                             // All items could be stacked
                             totalItemsTransferred += startCount;
