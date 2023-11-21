@@ -98,7 +98,7 @@ Single Player Game | [Not Yet](https://github.com/jonathan-robertson/robotic-inb
     - FTP: in another window, connect to your server via FTP and navigate to the game folder that should contain your `Mods` folder (if no `Mods` folder is present, you will need to create it in the appropriate location), then enter your `Mods` folder. If you are confused about where your mods folder should go, reach out to your host.
 4. 🚚 Move this new `robotic-inbox` folder into your `Mods` folder by dragging & dropping or cutting/copying & pasting, whichever you prefer
 5. ♻️ Restart your server to allow this mod to take effect and monitor your logs to ensure it starts successfully:
-    - you can search the logs for the word `Amnesia`; the name of this mod will appear with that phrase and all log lines it produces will be presented with this prefix for quick reference
+    - you can search the logs for the word `RoboticInbox`; the name of this mod will appear with that phrase and all log lines it produces will be presented with this prefix for quick reference
 
 ### Linux Server Installation (Server via SSH)
 
@@ -110,11 +110,11 @@ Single Player Game | [Not Yet](https://github.com/jonathan-robertson/robotic-inb
     - you may need to install `unzip` if it isn't already installed: `sudo apt-get update && sudo apt-get install unzip`
     - once unzipped, you can remove the robotic-inbox download with `rm robotic-inbox.zip`
 4. ♻️ Restart your server to allow this mod to take effect and monitor your logs to ensure it starts successfully:
-    - you can search the logs for the word `Amnesia`; the name of this mod will appear with that phrase and all log lines it produces will be presented with this prefix for quick reference
+    - you can search the logs for the word `RoboticInbox`; the name of this mod will appear with that phrase and all log lines it produces will be presented with this prefix for quick reference
     - rather than monitoring telnet, I'd recommend viewing the console logs directly because mod and DLL registration happens very early in the startup process and you may miss it if you connect via telnet after this happens
     - you can reference your server config file to identify your logs folder
     - if you installed 7 Days to Die with [LinuxGSM](https://linuxgsm.com/servers/sdtdserver/), your console log will be under `log/console/sdtdserver-console.log`
     - I'd highly recommend using `less` to open this file for a variety of reasons: it's safe to view active files with, easy to search, and can be automatically tailed/followed by pressing a keyboard shortcut so you can monitor logs in realtime
       - follow: `SHIFT+F` (use `CTRL+C` to exit follow mode)
       - exit: `q` to exit less when not in follow mode
-      - search: `/Amnesia` [enter] to enter search mode for the lines that will be produced by this mod; while in search mode, use `n` to navigate to the next match or `SHIFT+n` to navigate to the previous match
+      - search: `/RoboticInbox` [enter] to enter search mode for the lines that will be produced by this mod; while in search mode, use `n` to navigate to the next match or `SHIFT+n` to navigate to the previous match
