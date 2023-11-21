@@ -9,8 +9,8 @@ namespace RoboticInbox
     {
         private static readonly ModLog<StorageManager> _log = new ModLog<StorageManager>();
 
-        private const string ModMaintainer = "Kanaverum#8183";
-        private const string SupportLink = "https://discord.gg/tRJHSB9Uk7";
+        private const string ModMaintainer = "kanaverum";
+        private const string SupportLink = "https://discord.gg/hYa2sNHXya";
 
         private const int yMin = 0;
         private const int yMax = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
