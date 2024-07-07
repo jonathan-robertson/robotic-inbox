@@ -19,8 +19,8 @@ namespace RoboticInbox
         public static string SoundVehicleStorageOpen { get; private set; } = "vehicle_storage_open";
         public static string SoundVehicleStorageClose { get; private set; } = "vehicle_storage_close";
 
+        public static int InsecureInboxBlockId { get; private set; }
         public static int InboxBlockId { get; private set; }
-        public static int SecureInboxBlockId { get; private set; }
         public static int LandClaimRadius { get; private set; }
         public static int InboxRange { get; private set; } = 5;
         public static Dictionary<Vector3i, Coroutine> ActiveCoroutines { get; private set; } = new Dictionary<Vector3i, Coroutine>();
@@ -36,17 +36,17 @@ namespace RoboticInbox
             _log.Info("Mod recognizes you as the host, so it will begin managing containers.");
 
             _log.Info("Attempting to load block IDs for Mod.");
+            var roboticInboxInsecure = Block.GetBlockByName("cntRoboticInboxInsecure");
             var roboticInbox = Block.GetBlockByName("cntRoboticInbox");
-            var secureRoboticInbox = Block.GetBlockByName("cntSecureRoboticInbox");
-            if (roboticInbox != null && secureRoboticInbox != null)
+            if (roboticInboxInsecure != null && roboticInbox != null)
             {
+                InsecureInboxBlockId = roboticInboxInsecure.blockID;
                 InboxBlockId = roboticInbox.blockID;
-                SecureInboxBlockId = secureRoboticInbox.blockID;
-                _log.Info($"InboxBlockId={InboxBlockId}; SecureInboxBlockId={SecureInboxBlockId}");
+                _log.Info($"InsecureInboxBlockId={InsecureInboxBlockId}; InboxBlockId={InboxBlockId}");
             }
             else
             {
-                _log.Error($"InboxBlockId=FAILURE; SecureInboxBlockId=FAILURE; restarting the server will be necessary to fix this - otherwise please reach out to the mod maintainer {ModMaintainer} via {SupportLink}");
+                _log.Error($"InsecureInboxBlockId=FAILURE; InboxBlockId=FAILURE; restarting the server will be necessary to fix this - otherwise please reach out to the mod maintainer {ModMaintainer} via {SupportLink}");
             }
 
             var size = GameStats.GetInt(EnumGameStats.LandClaimSize);
@@ -63,12 +63,12 @@ namespace RoboticInbox
                 _log.Debug($"TileEntity not found at {sourcePos}");
                 return;
             }
-            if (SecureInboxBlockId != source.blockValue.Block.blockID)
+            if (InboxBlockId != source.blockValue.Block.blockID)
             {
-                _log.Debug($"SecureInboxBlockId != source.blockValue.Block.blockID at {sourcePos}");
+                _log.Debug($"InboxBlockId != source.blockValue.Block.blockID at {sourcePos}");
                 return; // only focus on robotic inbox blocks which are not broken
             }
-            _log.Debug($"TileEntity block id found to match {(SecureInboxBlockId != source.blockValue.Block.blockID ? InboxBlockId : SecureInboxBlockId)}");
+            _log.Debug($"TileEntity block id found to match {(InboxBlockId != source.blockValue.Block.blockID ? InsecureInboxBlockId : InboxBlockId)}");
             if (!TryCastAsContainer(source, out var sourceContainer))
             {
                 _log.Debug($"TileEntity at {sourcePos} could not be converted into a TileEntityLootContainer.");
@@ -193,7 +193,7 @@ namespace RoboticInbox
 
         internal static bool IsRoboticInbox(int blockId)
         {
-            return SecureInboxBlockId == blockId || InboxBlockId == blockId;
+            return InboxBlockId == blockId || InsecureInboxBlockId == blockId;
         }
 
         private static bool CheckAndHandleInUse(TileEntityLootContainer source, Vector3i sourcePos, TileEntityLootContainer target, Vector3i targetPos)
