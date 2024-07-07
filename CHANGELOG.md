@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] rename inbox blocks to follow new naming standards
 - [ ] test mechanics online
 - [ ] test with repairable locks
+- [x] update recipe: reduce forged iron, add pipe
 - [ ] update references to storage; this has updated to something new
 - [ ] verify if any 'player-placed containers' are non-writable and consider removing it
 - [x] update references for 7dtd-1.0

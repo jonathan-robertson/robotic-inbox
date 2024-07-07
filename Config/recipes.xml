@@ -1,9 +1,10 @@
 <config>
     <append xpath="/recipes">
         <recipe name="cntRoboticInbox" count="1" craft_area="workbench" tags="learnable,workbenchCrafting">
-            <ingredient name="resourceForgedIron" count="12" />
-            <ingredient name="resourceMechanicalParts" count="6" />
-            <ingredient name="resourceElectricParts" count="8" />
+            <ingredient name="resourceForgedIron" value="4" />
+            <ingredient name="resourceMetalPipe" value="3" />
+            <ingredient name="resourceMechanicalParts" value="6" />
+            <ingredient name="resourceElectricParts" value="8" />
         </recipe>
     </append>
 </config>
