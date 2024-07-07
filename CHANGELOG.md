@@ -8,12 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.0.0] - TBD
 
 - [ ] add feature for admins to modify area of effect and update `cntRoboticInboxDesc` to reference cvar (request from Blight)
+- [x] add repairable locks
 - [ ] add support for local and p2p, if possible
 - [ ] fix compilation errors
 - [x] remove journal tips (discontinued in 1.0)
 - [x] rename inbox blocks to follow new naming standards
 - [ ] test mechanics online
-- [ ] test with repairable locks
+- [x] update model to washing machine
 - [x] update recipe: reduce forged iron, add pipe
 - [ ] update references to storage; this has updated to something new
 - [ ] verify if any 'player-placed containers' are non-writable and consider removing it
