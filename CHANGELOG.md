@@ -8,10 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.0.0] - TBD
 
 - [ ] add feature for admins to modify area of effect and update `cntSecureRoboticInboxDesc` to reference cvar (request from Blight)
+- [ ] add support for local and p2p, if possible
 - [ ] fix compilation errors
-- [ ] remove journal tips (discontinued in 1.0)
+- [x] remove journal tips (discontinued in 1.0)
 - [ ] test mechanics online
-- [ ] test with repairable locks!
+- [ ] test with repairable locks
 - [ ] update references to storage; this has updated to something new
 - [ ] verify if any 'player-placed containers' are non-writable and consider removing it
 - [x] update references for 7dtd-1.0

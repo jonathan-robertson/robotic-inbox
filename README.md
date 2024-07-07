@@ -1,6 +1,6 @@
 # Robotic Inbox
 
-[![🧪 Tested On](https://img.shields.io/badge/🧪%20Tested%20On-A21.2%20b30-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
+[![🧪 Tested On](https://img.shields.io/badge/🧪%20Tested%20On-1.0%20b313-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
 
 - [Robotic Inbox](#robotic-inbox)
   - [Summary](#summary)
@@ -33,7 +33,7 @@ But your performance should be stellar - here are some things to consider and so
 
 ## Auto-Sorting
 
-> 📝 Players will find this information in their journals under `Robotic Inbox (General Info) [MOD]`
+> 📝 Players will find this information in the Robotic Inbox block's description before placing it.`
 
 The `Secure Robotic Inbox` is a new block meant to streamline item/resource organization within a base and help you to get back into the action as quickly as possible.
 
@@ -49,7 +49,7 @@ This new Inbox can be crafted at the Workbench or found for sale by a trader whe
 
 ## Placement/Configuration Requirements
 
-> 📝 Players will find this information in their journals under `Robotic Inbox (Security Info) [MOD]`
+> 📝 Players will find this information in the Robotic Inbox block's description before placing it.`
 
 The `Secure Robotic Inbox` has certain requirements depending on the state of the containers it interacts with.
 
@@ -87,7 +87,6 @@ Single Player Game | [Not Yet](https://github.com/jonathan-robertson/robotic-inb
   - No! You can drop this mod into an ongoing map without any trouble.
 - Does **removing** this mod require a fresh map?
   - Since this mod adds new blocks, removing it from a map could cause some issues (previously placed robotic inbox blocks would now throw exceptions in your logs, at the very least).
-  - Journal Entries added to the player Journal will unfortunately remain with their Localization stubs (but will otherwise have no text within them and will not impact gameplay at all).
 
 ### Windows/Linux Installation (Server via FTP from Windows PC)
 
