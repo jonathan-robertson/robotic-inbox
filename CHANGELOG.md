@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - TBD
+
+- [ ] add feature for admins to modify area of effect and update `cntSecureRoboticInboxDesc` to reference cvar (request from Blight)
+- [ ] fix compilation errors
+- [ ] remove journal tips (discontinued in 1.0)
+- [ ] test mechanics online
+- [ ] test with repairable locks!
+- [ ] update references to storage; this has updated to something new
+- [ ] verify if any 'player-placed containers' are non-writable and consider removing it
+- [x] update references for 7dtd-1.0
+
 ## [3.0.1] - 2023-11-21
 
 - fix readme reference to log token
