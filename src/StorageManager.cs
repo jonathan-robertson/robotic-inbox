@@ -76,7 +76,7 @@ namespace RoboticInbox
             }
 
             GetBoundsWithinWorldAndLandClaim(sourcePos, out var min, out var max);
-            ActiveCoroutines.Add(sourcePos, ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, sourceContainer, min, max)));
+            ActiveCoroutines.Add(sourcePos, ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, source, sourceContainer, min, max)));
         }
 
         private static void GetBoundsWithinWorldAndLandClaim(Vector3i source, out Vector3i min, out Vector3i max)
@@ -149,7 +149,7 @@ namespace RoboticInbox
             return Utils.FastMin(v1, Utils.FastMin(v2, v3));
         }
 
-        private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntityLootContainer source, Vector3i min, Vector3i max)
+        private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntity source, ITileEntityLootable sourceContainer, Vector3i min, Vector3i max)
         {
             // TODO: optimize this
             // TODO: possibly check at most... 1 slice of x at a time?
@@ -172,7 +172,7 @@ namespace RoboticInbox
                             if (VerifyContainer(target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
-                                Distribute(source, sourcePos, targetContainer, targetPos);
+                                Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
                             }
                         }
                     }
@@ -183,7 +183,7 @@ namespace RoboticInbox
             _ = ActiveCoroutines.Remove(sourcePos);
         }
 
-        private static bool VerifyContainer(TileEntity entity, out TileEntityLootContainer tileEntityLootContainer)
+        private static bool VerifyContainer(TileEntity entity, out ITileEntityLootable tileEntityLootContainer)
         {
             return TryCastAsContainer(entity, out tileEntityLootContainer)
                 && tileEntityLootContainer.bPlayerStorage
@@ -196,7 +196,7 @@ namespace RoboticInbox
             return InboxBlockId == blockId || InsecureInboxBlockId == blockId;
         }
 
-        private static bool CheckAndHandleInUse(TileEntityLootContainer source, Vector3i sourcePos, TileEntityLootContainer target, Vector3i targetPos)
+        private static bool CheckAndHandleInUse(TileEntity source, Vector3i sourcePos, TileEntity target, Vector3i targetPos)
         {
             var entityIdInSourceContainer = GameManager.Instance.GetEntityIDForLockedTileEntity(source);
             if (entityIdInSourceContainer != -1)
@@ -224,7 +224,7 @@ namespace RoboticInbox
             return false;
         }
 
-        private static void Distribute(TileEntityLootContainer source, Vector3i sourcePos, TileEntityLootContainer target, Vector3i targetPos)
+        private static void Distribute(TileEntity source, ITileEntityLootable sourceContainer, Vector3i sourcePos, TileEntity target, ITileEntityLootable targetContainer, Vector3i targetPos)
         {
             if (CheckAndHandleInUse(source, sourcePos, target, targetPos))
             {
@@ -248,22 +248,22 @@ namespace RoboticInbox
                 //MarkInUse(sourcePos, source.EntityId, source.entityId);
                 //MarkInUse(targetPos, target.EntityId, source.entityId);
 
-                for (var s = 0; s < source.items.Length; s++)
+                for (var s = 0; s < sourceContainer.items.Length; s++)
                 {
-                    if (ItemStack.Empty.Equals(source.items[s])) { continue; }
+                    if (ItemStack.Empty.Equals(sourceContainer.items[s])) { continue; }
                     var foundMatch = false;
                     var fullyMoved = false;
-                    var startCount = source.items[s].count;
+                    var startCount = sourceContainer.items[s].count;
                     // try to stack source itemStack into any matching target itemStacks
-                    for (var t = 0; t < target.items.Length; t++)
+                    for (var t = 0; t < targetContainer.items.Length; t++)
                     {
-                        if (target.items[t].itemValue.ItemClass != source.items[s].itemValue.ItemClass)
+                        if (targetContainer.items[t].itemValue.ItemClass != sourceContainer.items[s].itemValue.ItemClass)
                         {
                             // Move on to next target if this target doesn't match source type
                             continue;
                         }
                         foundMatch = true;
-                        (var anyMoved, var allMoved) = target.TryStackItem(t, source.items[s]);
+                        (var anyMoved, var allMoved) = targetContainer.TryStackItem(t, sourceContainer.items[s]);
                         if (allMoved)
                         {
                             // All items could be stacked
@@ -277,22 +277,22 @@ namespace RoboticInbox
                     {
 
                         // Not all items could be stacked
-                        if (target.AddItem(source.items[s]))
+                        if (targetContainer.AddItem(sourceContainer.items[s]))
                         {
                             // Remaining items could be moved to empty slot
-                            source.UpdateSlot(s, ItemStack.Empty);
+                            sourceContainer.UpdateSlot(s, ItemStack.Empty);
                             totalItemsTransferred += startCount;
                         }
                         else
                         {
                             // Remaining items could not be moved to empty slot
-                            totalItemsTransferred += startCount - source.items[s].count;
+                            totalItemsTransferred += startCount - sourceContainer.items[s].count;
                         }
                     }
                 }
                 if (totalItemsTransferred > 0)
                 {
-                    target.items = StackSortUtil.CombineAndSortStacks(target.items);
+                    targetContainer.items = StackSortUtil.CombineAndSortStacks(targetContainer.items);
                     HandleTransferred(targetPos, target, totalItemsTransferred);
                 }
             }
@@ -312,8 +312,8 @@ namespace RoboticInbox
 
         private static bool CanAccess(TileEntity source, TileEntity target, Vector3i targetPos)
         {
-            var sourceIsLockable = ToLock(source, out var sourceLock);
-            var targetIsLockable = ToLock(target, out var targetLock);
+            var sourceIsLockable = TryCastAsLock(source, out var sourceLock);
+            var targetIsLockable = TryCastAsLock(target, out var targetLock);
 
             if (!targetIsLockable)
             {
@@ -348,62 +348,91 @@ namespace RoboticInbox
             return false;
         }
 
-        private static void HandleTargetLockedWithoutPassword(Vector3i pos, TileEntity target)
+        private static bool TryCastToITileEntitySignable(TileEntity tileEntity, out ITileEntitySignable signable)
+        {
+            switch (tileEntity)
+            {
+                case TileEntitySecureLootContainerSigned signedContainer:
+                    signable = signedContainer;
+                    return true;
+                case TileEntityComposite composite:
+                    signable = composite.GetFeature<TEFeatureSignable>();
+                    return true;
+            }
+            signable = null;
+            return false;
+        }
+
+        private static bool TryGetOwner(TileEntity target, out PlatformUserIdentifierAbs owner)
         {
             switch (target)
             {
-                case TileEntitySecureLootContainerSigned signedContainer:
-                    _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Locked and has no password"));
-                    break;
+                case TileEntityComposite composite:
+                    owner = composite.Owner;
+                    return true;
+                case TileEntitySecureLootContainerSigned tileEntitySecureLootContainerSigned:
+                    owner = tileEntitySecureLootContainerSigned.ownerID;
+                    return true;
+            }
+            owner = null;
+            return false;
+        }
+
+        private static void HandleTargetLockedWithoutPassword(Vector3i pos, TileEntity target)
+        {
+            if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
+            {
+                _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signable, owner, "Can't Distribute: Container Locked without password")); // TODO: test 2
             }
             GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
         }
 
         private static void HandleTargetLockedWhileSourceIsNot(Vector3i pos, TileEntity target)
         {
-            switch (target)
+            if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
             {
-                case TileEntitySecureLootContainerSigned signedContainer:
-                    _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Locked but Inbox isn't"));
-                    break;
+                _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signable, owner, "Can't Distribute: Container Locked but Inbox is not")); // TODO: good!
             }
             GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
         }
 
         private static void HandlePasswordMismatch(Vector3i pos, TileEntity target)
         {
-            switch (target)
+            if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
             {
-                case TileEntitySecureLootContainerSigned signedContainer:
-                    _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signedContainer, "Can't Distribute: Passwords Don't match"));
-                    break;
+                _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signable, owner, "Can't Distribute: Password Does not match Inbox")); // TODO: test 2
             }
             GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
         }
 
-        private static void HandleTransferred(Vector3i pos, TileEntityLootContainer target, int totalItemsTransferred)
+        private static void HandleTransferred(Vector3i pos, TileEntity target, int totalItemsTransferred)
         {
-            switch (target)
+            if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
             {
-                case TileEntitySecureLootContainerSigned signedContainer:
-                    // target.GetTileEntityType() == TileEntityType.SecureLootSigned
-                    _ = ThreadManager.StartCoroutine(ShowTemporaryText(2, signedContainer, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
-                    break;
+                _ = ThreadManager.StartCoroutine(ShowTemporaryText(2, signable, owner, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
             }
             GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageClose, AudioRolloffMode.Logarithmic, 5);
         }
 
-        private static IEnumerator ShowTemporaryText(float seconds, TileEntitySecureLootContainerSigned container, string text)
+        private static IEnumerator ShowTemporaryText(float seconds, ITileEntitySignable signableEntity, PlatformUserIdentifierAbs signingPlayer, string text)
         {
-            _log.Debug("called coroutine");
+            if (signingPlayer == null)
+            {
+                _log.Trace("No Signing Player found; cannot update helper text on target container");
+                yield return null;
+            }
 
-            var originalText = container.GetText();
-            container.SetText(text, true); // update with new text (and sync to players)
+            var originalText = signableEntity.GetAuthoredText().Text;
+            _log.Trace($"sending temporary text to players: {text}"); // TODO: REMOVE
+            signableEntity.SetText(text, true, signingPlayer); // update with new text (and sync to players)
 
             // update server with original text again in case of shutdown or container destroy before yield completes
-            container.SetText(originalText, false); // update with original text (and do NOT sync to players)
+            signableEntity.SetText(originalText, false, signingPlayer); // update with original text (and do NOT sync to players)
             yield return new WaitForSeconds(seconds);
-            container?.SetText(container.GetText(), true); // sync original text to players
+            _log.Trace($"sending original text to players: {originalText}");
+            // flush value with something new so system respects next change for network
+            signableEntity?.SetText(originalText != "x" ? "x" : "y", false, signingPlayer);
+            signableEntity?.SetText(originalText, true, signingPlayer); // sync original text to players
         }
 
         /* TODO: provide feedback with textures to non-writable storage
@@ -424,31 +453,65 @@ namespace RoboticInbox
         }
         */
 
-        private static bool TryCastAsContainer(TileEntity entity, out TileEntityLootContainer typed)
+        private static bool TryCastAsContainer(TileEntity entity, out ITileEntityLootable typed)
         {
-            if (entity != null && (
-                entity.GetTileEntityType() == TileEntityType.Loot ||
-                entity.GetTileEntityType() == TileEntityType.SecureLoot ||
-                entity.GetTileEntityType() == TileEntityType.SecureLootSigned
-            ))
+            if (entity != null)
             {
-                typed = entity as TileEntityLootContainer;
-                return true;
+                if (IsCompositeStorage(entity))
+                {
+                    typed = (entity as TileEntityComposite).GetFeature<TEFeatureStorage>();
+                    return typed != null;
+                }
+                if (IsNonCompositeStorage(entity))
+                {
+                    typed = entity as ITileEntityLootable;
+                    return typed != null;
+                }
             }
             typed = null;
             return false;
         }
 
-        private static bool ToLock(TileEntity entity, out ILockable typed)
+        private static bool IsCompositeStorage(TileEntity entity)
         {
-            if (entity.GetTileEntityType() == TileEntityType.SecureLoot ||
-                entity.GetTileEntityType() == TileEntityType.SecureLootSigned)
+            return entity.GetTileEntityType() == TileEntityType.Composite
+                && (entity as TileEntityComposite).GetFeature<TEFeatureStorage>() != null;
+        }
+
+        private static bool IsNonCompositeStorage(TileEntity entity)
+        {
+            return entity.GetTileEntityType() == TileEntityType.Loot ||
+                entity.GetTileEntityType() == TileEntityType.SecureLoot ||
+                entity.GetTileEntityType() == TileEntityType.SecureLootSigned;
+        }
+
+        private static bool TryCastAsLock(TileEntity entity, out ILockable typed)
+        {
+            if (IsCompositeLock(entity))
+            {
+                typed = (entity as TileEntityComposite).GetFeature<TEFeatureLockable>();
+                return typed != null;
+            }
+            else if (IsLock(entity))
             {
                 typed = entity as ILockable;
-                return true;
+                return typed != null;
             }
             typed = null;
             return false;
+        }
+
+        private static bool IsCompositeLock(TileEntity entity)
+        {
+            return entity != null
+                && entity is TileEntityComposite
+                && (entity as TileEntityComposite).GetFeature<TEFeatureLockable>() != null;
+        }
+
+        private static bool IsLock(TileEntity entity)
+        {
+            return entity.GetTileEntityType() == TileEntityType.SecureLoot
+                || entity.GetTileEntityType() == TileEntityType.SecureLootSigned;
         }
 
         // TODO: as a safety precaution, lock source and target when transferring items between the two of them
