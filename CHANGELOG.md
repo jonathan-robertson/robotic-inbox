@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [ ] add feature for admins to modify area of effect and update `cntRoboticInboxDesc` to reference cvar (request from Blight)
 - [x] add repairable locks
-  - [ ] confirm that repair is not possible when within an enemy's LCB
 - [ ] add support for local and p2p, if possible
 - [x] fix compilation errors
 - [x] remove journal tips (discontinued in 1.0)
@@ -24,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] update references to storage; this has updated to something new
 - [x] verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)
 - [x] update references for 7dtd-1.0
-- [ ] update readme with screenshots
+- [x] update readme with screenshots
 
 ## [3.0.1] - 2023-11-21
 

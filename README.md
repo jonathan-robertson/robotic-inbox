@@ -5,9 +5,15 @@
 - [Robotic Inbox](#robotic-inbox)
   - [Summary](#summary)
     - [Support](#support)
-  - [Performance Considerations](#performance-considerations)
-  - [Auto-Sorting](#auto-sorting)
-  - [Placement/Configuration Requirements](#placementconfiguration-requirements)
+  - [Features](#features)
+    - [Automatic Item Distribution and Organization](#automatic-item-distribution-and-organization)
+    - [Dynamic Hints](#dynamic-hints)
+    - [Repairable Locks (new to v4)](#repairable-locks-new-to-v4)
+    - [Multiple Colors (new to v4)](#multiple-colors-new-to-v4)
+  - [Info](#info)
+    - [What Happens to Leftovers?](#what-happens-to-leftovers)
+    - [How Would I Acquire a Robotic Inbox In-Game?](#how-would-i-acquire-a-robotic-inbox-in-game)
+    - [For Hosts/Admins: Performance Considerations](#for-hostsadmins-performance-considerations)
   - [Setup](#setup)
     - [Environment / EAC / Hosting Requirements](#environment--eac--hosting-requirements)
     - [Map Considerations for Installation or Uninstallation](#map-considerations-for-installation-or-uninstallation)
@@ -18,52 +24,79 @@
 
 A special container that automatically sorts and distributes items to other nearby storage containers.
 
+![robotic inbox, standard color](https://raw.githubusercontent.com/jonathan-robertson/robotic-inbox/media/robotic-inbox-blue.png)
+
 ### Support
 
 🗪 If you would like support for this mod, please feel free to reach out to me via [Discord](https://discord.gg/hYa2sNHXya) (my username is `kanaverum`).
 
-## Performance Considerations
+## Features
 
-As you might imagine, interacting instantly with multiple containers, sorting them, and distributing items to them could all be very taxing on the system.
+### Automatic Item Distribution and Organization
 
-But your performance should be stellar - here are some things to consider and some things this mod intentionally does to keep game servers running smoothly:
+This container will automatically distribute resources placed within it if they are present in other nearby containers.
+Resources can be distributed to any container `within 5 meters` (horizontally/vertically), so long as the following conditions are met:
 
-1. Container data is already processed server-side in 7 days to die. This means that adjustments to storage are *most* performant on the server's end rather than on the client's end and this approach actually reduces networking calls vs players organizing/stacking items themselves.
-2. Container organization is run on each box within range via a *concurrent* loop. This ensures that as inboxes are working through your players' containers, the server can still process other tasks and avoid lagging.
+1. If inbox is locked, target must be locked, and share same password.
+2. If inbox is unlocked, target must also be unlocked.
+3. If inbox is within an LCB, target must also be within that same LCB.
+4. Backpack, vehicle, and storage not placed by a player are ignored.
 
-## Auto-Sorting
+Press & hold `Action Key` to lock it or set a combination.
 
-> 📝 Players will find this information in the Robotic Inbox block's description before placing it.`
+> *This explanation is included in-game as the Robotic Inbox Block Description.*
 
-The `Secure Robotic Inbox` is a new block meant to streamline item/resource organization within a base and help you to get back into the action as quickly as possible.
+### Dynamic Hints
 
-When placed **within an LCB**, it will automatically send all of the items it receives to nearby player-placed storage containers up to 5 meters away in any direction (so long as they're within the same LCB).
+✏️ While any secure or insecure player-placed storage container can be targeted by the Inbox, **Writable Storage Containers will describe how the Inbox is interacting with them**, making them the recommended type of container to place near an Inbox.
 
-For security reasons, **the Inbox will need to use the same password as any locked storage containers it tries to organize**.
+![robotic inbox being repaired](https://raw.githubusercontent.com/jonathan-robertson/robotic-inbox/media/robotic-inbox-lock-messages.png)
 
-⚠️ While any secure or insecure player-placed storage container will work with the Inbox, **Writable Storage Boxes will describe how the Inbox is interacting with them**, making them the recommended type of container to place near an Inbox.
+### Repairable Locks (new to v4)
 
-Any items in the Inbox that are not able to be matched with another container will be left there until you have time to decide which container to store them in.
+If someone busts your lock, you can replace the lock simply by repairing it. This will go through the upgrade flow and should appear relatively seamless.
 
-This new Inbox can be crafted at the Workbench or found for sale by a trader whenever you're ready.
+> ⚠️ Robotic Inboxes with broken locks will not be able to distribute items again until they're repaired.
 
-## Placement/Configuration Requirements
+![robotic inbox being repaired](https://raw.githubusercontent.com/jonathan-robertson/robotic-inbox/media/robotic-inbox-repairable-lock.png)
 
-> 📝 Players will find this information in the Robotic Inbox block's description before placing it.`
+### Multiple Colors (new to v4)
 
-The `Secure Robotic Inbox` has certain requirements depending on the state of the containers it interacts with.
+![robotic inboxes with colors (unlit)](https://raw.githubusercontent.com/jonathan-robertson/robotic-inbox/media/robotic-inbox-colors-unlit.png)
+> *unlit in daylight*
 
-⚠️ Using `Writable Storage Boxes` will make configuring your storage area far easier, thanks to the feedback text that will appear when the Inbox attempts to interact with them.
+![robotic inboxes with colors (lit)](https://raw.githubusercontent.com/jonathan-robertson/robotic-inbox/media/robotic-inbox-colors-lit.png)
+> *lit in daylight with a headlamp*
 
-> ℹ️ In versions prior to 1.3.0, the original text on Writable Storage Boxes could be permanently lost if the temporary text was showing while the last remaining player in the area logged out or the server restarted. As of version 1.3.0 and beyond, this is no longer an issue.
+## Info
 
-If the following requirements aren't met, the Inbox will have to skip interactions with the target containers until the necessary adjustments are made:
+### What Happens to Leftovers?
 
-1. containers not placed by players (ex: POI containers) are ignored.
-2. player backpacks and vehicles are ignored.
-3. both Inbox and target container must be within the same LCB area.
-4. target container must be within 5 meters of Inbox, both horizontally and vertically (imagine a cube 11x11 in size with the inbox at the center).
-5. if target container is locked, Inbox must also be lockable, in a locked state, and set to the same password as target container.
+📦 Any items in the Inbox that are not able to be matched with another container will be left there until you have time to decide which container to store them in.
+
+### How Would I Acquire a Robotic Inbox In-Game?
+
+🏪 Robotic Inbox can be purchased from a trader as soon as you start the game.
+
+🛠️ Robotic Inboxes can also be crafted at the Workbench after reading enough about robotics to also craft a Tier 1 Junk Sledge.
+
+Ingredient | Count
+--- | :---:
+resourceForgedIron | 4
+resourceMetalPipe | 3
+resourceMechanicalParts | 6
+resourceElectricParts | 8
+
+### For Hosts/Admins: Performance Considerations
+
+This mod does a lot, so I would understand if you have any concern around how much load it would add to your server.
+
+Here are some things I kept in mind as I was designing and tweaking this mod:
+
+- Container data is already processed server-side in 7 days to die. This means that
+    1. adjustments to storage are actually *most* performant on the server's end rather than on the client's end and...
+    2. this approach to manipulating container data actually reduces networking calls vs any client-side mod that operates from the players' ends
+- Container organization is run on each box within range via a *concurrent* loop. This ensures that as inboxes are scanning and updating your players' containers, the server can still process other tasks and avoid zombie or crafting lag.
 
 ## Setup
 
@@ -86,7 +119,7 @@ Single Player Game | [Not Yet](https://github.com/jonathan-robertson/robotic-inb
 - Does **adding** this mod require a fresh map?
   - No! You can drop this mod into an ongoing map without any trouble.
 - Does **removing** this mod require a fresh map?
-  - Since this mod adds new blocks, removing it from a map could cause some issues (previously placed robotic inbox blocks would now throw exceptions in your logs, at the very least).
+  - Since this mod adds new blocks, removing it from a map could cause some issues: previously placed robotic inbox blocks would now throw exceptions in your logs, at the very least.
 
 ### Windows/Linux Installation (Server via FTP from Windows PC)
 
