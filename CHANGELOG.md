@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [ ] add feature for admins to modify area of effect and update `cntRoboticInboxDesc` to reference cvar (request from Blight)
 - [x] add repairable locks
+  - [ ] confirm that repair is not possible when within an enemy's LCB
 - [ ] add support for local and p2p, if possible
 - [x] fix compilation errors
 - [x] remove journal tips (discontinued in 1.0)
@@ -18,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [ ] other player's placed container is distributable if rules are met
   - [ ] side-by-side LCBs are (expected to not be) transferrable (even) if owned by same player
 - [x] update model to washing machine
-  - [ ] add multiple color options?
+  - [x] add multiple color options
 - [x] update recipe: reduce forged iron, add pipe
 - [x] update references to storage; this has updated to something new
 - [x] verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)

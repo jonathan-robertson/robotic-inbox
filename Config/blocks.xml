@@ -1,98 +1,113 @@
 <config>
     <append xpath="/blocks">
+        <!-- *** Robotic Inboxes -->
         <block name="cntRoboticInbox">
             <property name="CreativeMode" value="Player" />
             <property name="Class" value="CompositeTileEntity" />
             <property class="CompositeFeatures">
                 <property class="TEFeatureStorage">
-                    <property name="LootList" value="playerWoodWritableStorage" />
+                    <property name="LootList" value="playerRoboticInbox" />
                 </property>
                 <property class="TEFeatureLockable" />
-                <property class="TEFeatureSignable">
-                    <property name="FontSize" value="90" />
-                    <property name="LineCount" value="3" />
-                    <property name="LineWidth" value="0.55" />
-                </property>
             </property>
 
-            <!-- added values not included in cntWoodWritableCrate -->
-            <property name="TraderStageTemplate" value="electricTier1" />
-            <property name="SellableToTrader" value="true" />
-            <property name="UnlockedBy" value="craftingRobotics" />
+            <!-- details -->
+            <property name="DescriptionKey" value="cntRoboticInboxGroupDesc" />
+            <property name="Material" value="Mmetal" />
+
+            <!-- icon -->
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="007fff" />
             <property name="TintColor" value="007fff" />
+
+            <!-- model -->
+            <property name="Shape" value="ModelEntity" />
+            <property name="Model" value="@:Entities/LootContainers/washerClosedPrefab.prefab" />
             <property name="ImposterExchange" value="imposterBlock" param1="176" />
 
-            <!-- adjusted values from cntWoodWritableCrate -->
-            <property name="DescriptionKey" value="cntRoboticInboxDesc" />
-            <property name="Material" value="Mmetal" />
-            <property name="Model" value="@:Entities/LootContainers/washerClosedPrefab.prefab" />
-            <property name="EconomicValue" value="150" />
+            <!-- placement -->
+            <property name="Place" value="TowardsPlacerInverted" />
+            <property name="AllowedRotations" value="Basic90" />
+
+            <!-- trade -->
+            <property name="EconomicBundleSize" value="10" />
+            <property name="SellableToTrader" value="false" />
+
+            <!-- recipe -->
+            <!-- should not be crafting this -->
+
+            <!-- salvage/repair -->
+            <property name="MaxDamage" value="500" />
             <drop event="Destroy" name="resourceScrapIron" count="4,8" />
             <drop event="Destroy" name="resourceMetalPipe" count="0,1" />
             <drop event="Destroy" name="resourceMechanicalParts" count="0,2" />
             <drop event="Destroy" name="resourceElectricParts" count="0,3" />
             <drop event="Fall" name="scrapMetalPile" count="1" prob="0.75" stick_chance="1" />
-            <property name="DowngradeBlock" value="cntRoboticInboxInsecure" />
-
-            <!-- original values from cntWoodWritableCrate -->
-            <!-- <property name="DescriptionKey" value="cntWoodWritableCrateDesc"/> -->
-            <!-- <property name="Material" value="MwoodReinforced" /> -->
-            <property name="Shape" value="ModelEntity" />
-            <!-- <property name="Model" value="@:Entities/LootContainers/woodWritableCratePrefab.prefab" /> -->
-            <property name="WaterFlow" value="permitted" />
-            <property name="Path" value="solid" />
-            <property name="Place" value="TowardsPlacerInverted" />
-            <property name="AllowedRotations" value="Basic90" />
-            <!-- <property name="FuelValue" value="300" /> -->
-            <!-- <property name="EconomicValue" value="6" /> -->
-            <property name="MaxDamage" value="500" />
             <property class="RepairItems">
-                <!-- original values -->
-                <!-- <property name="resourceWood" value="10" /> -->
-
-                <!-- adjusted values -->
                 <property name="resourceForgedIron" value="2" />
                 <property name="resourceMetalPipe" value="1" />
                 <property name="resourceMechanicalParts" value="3" />
                 <property name="resourceElectricParts" value="4" />
             </property>
-            <!-- <drop event="Destroy" name="resourceWood" count="1,3" /> -->
-            <!-- <drop event="Fall" name="terrDestroyedWoodDebris" count="1" prob="0.75" stick_chance="1" /> -->
-            <!-- <property name="DowngradeBlock" value="cntWoodWritableCrateInsecure" /> -->
-            <!-- <property class="UpgradeBlock">
-                <property name="ToBlock" value="cntIronWritableCrate" />
-                <property name="Item" value="resourceForgedIron" />
-                <property name="ItemCount" value="10" />
-                <property name="UpgradeHitCount" value="4" />
-            </property>
-            <property name="UpgradeSound" value="place_block_metal" /> -->
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecure" />
+
+            <!-- other properties -->
+            <property name="Path" value="solid" />
+            <property name="WaterFlow" value="permitted" />
             <property name="SortOrder1" value="B106" />
             <property name="SortOrder2" value="0000" />
             <property name="Group" value="Basics,Building,advBuilding" />
-            <property name="Tags" value="timecharge" />
+            <property name="Tags" value="timecharge" /> <!-- TODO: add 'roboticinbox' tag-->
             <property name="FilterTags" value="MC_playerBlocks,SC_decor" />
         </block>
-
         <block name="cntRoboticInboxInsecure">
-            <property name="CreativeMode" value="None" />
+            <property name="CreativeMode" value="Player" />
             <property name="Class" value="CompositeTileEntity" />
             <property class="CompositeFeatures">
                 <property class="TEFeatureStorage">
-                    <property name="LootList" value="playerWoodWritableStorage" />
-                </property>
-                <property class="TEFeatureSignable">
-                    <property name="FontSize" value="90" />
-                    <property name="LineCount" value="3" />
-                    <property name="LineWidth" value="0.55" />
+                    <property name="LootList" value="playerRoboticInbox" />
                 </property>
             </property>
 
-            <!-- added values not included in cntWoodWritableCrateInsecure -->
+            <!-- details -->
+            <property name="DescriptionKey" value="cntRoboticInboxGroupDesc" />
+            <property name="Material" value="Mmetal" />
+
+            <!-- icon -->
+            <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="007fff" />
             <property name="TintColor" value="007fff" />
+
+            <!-- model -->
+            <property name="Shape" value="ModelEntity" />
+            <property name="Model" value="@:Entities/LootContainers/washerOpenPrefab.prefab" />
             <property name="ImposterExchange" value="imposterBlock" param1="176" />
+
+            <!-- placement -->
+            <property name="Place" value="TowardsPlacerInverted" />
+            <property name="AllowedRotations" value="Basic90" />
+            <property name="CanPickup" value="false" />
+
+            <!-- trade -->
+            <property name="EconomicBundleSize" value="10" />
+            <property name="SellableToTrader" value="false" />
+
+            <!-- recipe -->
+            <!-- should not be crafting this -->
+
+            <!-- salvage/repair -->
+            <property name="MaxDamage" value="500" />
+            <drop event="Destroy" name="resourceScrapIron" count="4,8" />
+            <drop event="Destroy" name="resourceMetalPipe" count="0,1" />
+            <drop event="Destroy" name="resourceMechanicalParts" count="0,2" />
+            <drop event="Destroy" name="resourceElectricParts" count="0,3" />
+            <drop event="Fall" name="scrapMetalPile" count="1" prob="0.75" stick_chance="1" />
+            <property class="RepairItems">
+                <property name="resourceForgedIron" value="2" />
+                <property name="resourceMetalPipe" value="1" />
+                <property name="resourceMechanicalParts" value="3" />
+                <property name="resourceElectricParts" value="4" />
+            </property>
             <property class="UpgradeBlock"> <!-- repair busted lock! -->
                 <property name="ToBlock" value="cntRoboticInbox" />
                 <property name="Item" value="resourceForgedIron" />
@@ -101,40 +116,244 @@
             </property>
             <property name="UpgradeSound" value="place_block_metal" />
 
-            <!-- adjusted values from cntWoodWritableCrateInsecure -->
-            <property name="Material" value="Mmetal" />
-            <property name="CustomIcon" value="cntWasherOpen" />
-            <property name="Model" value="@:Entities/LootContainers/washerOpenPrefab.prefab" />
-            <drop event="Destroy" name="resourceScrapIron" count="4,8" />
-            <drop event="Destroy" name="resourceMetalPipe" count="0,1" />
-            <drop event="Destroy" name="resourceMechanicalParts" count="0,2" />
-            <drop event="Destroy" name="resourceElectricParts" count="0,3" />
-            <drop event="Fall" name="scrapMetalPile" count="1" prob="0.75" stick_chance="1" />
-
-            <!-- original values from cntWoodWritableCrateInsecure -->
-            <!-- <property name="CustomIcon" value="cntWoodWritableCrate" /> -->
-            <!-- <property name="Material" value="MwoodReinforced" /> -->
-            <property name="Shape" value="ModelEntity" />
-            <!-- <property name="Model" value="@:Entities/LootContainers/woodWritableCratePrefab.prefab" /> -->
-            <property name="WaterFlow" value="permitted" />
-            <property name="AllowedRotations" value="Basic90" />
+            <!-- other properties -->
             <property name="Path" value="solid" />
-            <property name="MaxDamage" value="500" />
-            <property class="RepairItems">
-                <!-- original -->
-                <!-- <property name="resourceWood" value="10" /> -->
-
-                <!-- adjusted -->
-                <property name="resourceForgedIron" value="2" />
-                <property name="resourceMetalPipe" value="1" />
-                <property name="resourceMechanicalParts" value="3" />
-                <property name="resourceElectricParts" value="4" />
-            </property>
-            <!-- <drop event="Destroy" name="resourceWood" count="1,3" /> -->
-            <!-- <drop event="Fall" name="terrDestroyedWoodDebris" count="1" prob="0.75" stick_chance="1" /> -->
+            <property name="WaterFlow" value="permitted" />
             <property name="SortOrder1" value="B106" />
             <property name="SortOrder2" value="0001" />
             <property name="FilterTags" value="MC_playerBlocks,SC_decor" />
+        </block>
+
+        <block name="cntRoboticInboxRed">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="ff0000" />
+            <property name="TintColor" value="ff0000" />
+            <property name="SortOrder2" value="0002" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecureRed" />
+        </block>
+        <block name="cntRoboticInboxOrange">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="ff8000" />
+            <property name="TintColor" value="ff8000" />
+            <property name="SortOrder2" value="0003" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecureOrange" />
+        </block>
+        <block name="cntRoboticInboxYellow">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="ffe135" />
+            <property name="TintColor" value="ffe135" />
+            <property name="SortOrder2" value="0004" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecureYellow" />
+        </block>
+        <block name="cntRoboticInboxGreen">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="00ff80" />
+            <property name="TintColor" value="00ff80" />
+            <property name="SortOrder2" value="0005" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecureGreen" />
+        </block>
+        <block name="cntRoboticInboxPink">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="7B5F72" />
+            <property name="TintColor" value="7B5F72" />
+            <property name="SortOrder2" value="0006" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecurePink" />
+        </block>
+        <block name="cntRoboticInboxPurple">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="8000ff" />
+            <property name="TintColor" value="8000ff" />
+            <property name="SortOrder2" value="0007" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecurePurple" />
+        </block>
+        <block name="cntRoboticInboxGrey">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="414141" />
+            <property name="TintColor" value="414141" />
+            <property name="SortOrder2" value="0008" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecureGrey" />
+        </block>
+        <block name="cntRoboticInboxWhite">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="8C8C8C" />
+            <property name="TintColor" value="8C8C8C" />
+            <property name="SortOrder2" value="0009" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecureWhite" />
+        </block>
+        <block name="cntRoboticInboxArmyGreen">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="454B1B" />
+            <property name="TintColor" value="454B1B" />
+            <property name="SortOrder2" value="0011" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecureArmyGreen" />
+        </block>
+        <block name="cntRoboticInboxCobalt">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="0047ab" />
+            <property name="TintColor" value="0047ab" />
+            <property name="SortOrder2" value="0012" />
+            <property name="DowngradeBlock" value="cntRoboticInboxInsecureCobalt" />
+        </block>
+
+        <block name="cntRoboticInboxInsecureRed">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="ff0000" />
+            <property name="TintColor" value="ff0000" />
+            <property name="SortOrder2" value="0002" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxRed" />
+            </property>
+        </block>
+        <block name="cntRoboticInboxInsecureOrange">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="ff8000" />
+            <property name="TintColor" value="ff8000" />
+            <property name="SortOrder2" value="0003" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxOrange" />
+            </property>
+        </block>
+        <block name="cntRoboticInboxInsecureYellow">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="ffe135" />
+            <property name="TintColor" value="ffe135" />
+            <property name="SortOrder2" value="0004" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxYellow" />
+            </property>
+        </block>
+        <block name="cntRoboticInboxInsecureGreen">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="00ff80" />
+            <property name="TintColor" value="00ff80" />
+            <property name="SortOrder2" value="0005" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxGreen" />
+            </property>
+        </block>
+        <block name="cntRoboticInboxInsecurePink">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="7B5F72" />
+            <property name="TintColor" value="7B5F72" />
+            <property name="SortOrder2" value="0006" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxPink" />
+            </property>
+        </block>
+        <block name="cntRoboticInboxInsecurePurple">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="8000ff" />
+            <property name="TintColor" value="8000ff" />
+            <property name="SortOrder2" value="0007" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxPurple" />
+            </property>
+        </block>
+        <block name="cntRoboticInboxInsecureGrey">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="414141" />
+            <property name="TintColor" value="414141" />
+            <property name="SortOrder2" value="0008" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxGrey" />
+            </property>
+        </block>
+        <block name="cntRoboticInboxInsecureWhite">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="8C8C8C" />
+            <property name="TintColor" value="8C8C8C" />
+            <property name="SortOrder2" value="0009" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxWhite" />
+            </property>
+        </block>
+        <block name="cntRoboticInboxInsecureArmyGreen">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="454B1B" />
+            <property name="TintColor" value="454B1B" />
+            <property name="SortOrder2" value="0011" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxArmyGreen" />
+            </property>
+        </block>
+        <block name="cntRoboticInboxInsecureCobalt">
+            <property name="Extends" value="cntRoboticInboxInsecure" />
+            <property name="CreativeMode" value="Player" />
+            <property name="CustomIcon" value="cntWasherOpen" />
+            <property name="CustomIconTint" value="0047ab" />
+            <property name="TintColor" value="0047ab" />
+            <property name="SortOrder2" value="0012" />
+            <property class="UpgradeBlock">
+                <property name="ToBlock" value="cntRoboticInboxCobalt" />
+            </property>
+        </block>
+
+        <!-- *** ROBOTIC_INBOX_VARIANT_HELPER -->
+        <block name="cntRoboticInboxVariantHelper">
+            <property name="Extends" value="cntRoboticInbox" />
+            <property name="CreativeMode" value="Player" />
+
+            <property name="CustomIcon" value="cntWasherClosed" />
+            <property name="CustomIconTint" value="007fff" />
+
+            <property name="ItemTypeIcon" value="all_blocks" />
+            <property name="DescriptionKey" value="cntRoboticInboxGroupDesc" />
+
+            <!-- trade -->
+            <property name="TraderStageTemplate" value="electricTier1" />
+            <property name="EconomicValue" value="150" />
+            <property name="EconomicBundleSize" value="10" />
+            <property name="SellableToTrader" value="true" />
+
+            <!-- recipe -->
+            <property name="UnlockedBy" value="craftingRobotics" />
+
+            <!-- variant block -->
+            <property name="SelectAlternates" value="true" />
+            <property name="PlaceAltBlockValue" value="cntRoboticInbox,cntRoboticInboxRed,cntRoboticInboxOrange,cntRoboticInboxYellow,cntRoboticInboxGreen,cntRoboticInboxPurple,cntRoboticInboxPink,cntRoboticInboxGrey,cntRoboticInboxWhite,cntRoboticInboxArmyGreen,cntRoboticInboxCobalt" />
+
+            <!-- other properties -->
+            <property name="SortOrder1" value="U200" />
+            <property name="SortOrder2" value="0000" />
+            <property name="FilterTags" value="MC_playerBlocks,SC_playerHelpers" />
         </block>
     </append>
 </config>

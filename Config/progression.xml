@@ -1,8 +1,8 @@
 <config>
     <insertAfter xpath="/progression/crafting_skills/crafting_skill[@name='craftingRobotics']/display_entry[@item='gunBotT1JunkSledge']">
-        <display_entry item="cntRoboticInbox" has_quality="false" unlock_level="23" />
+        <display_entry item="cntRoboticInboxVariantHelper" has_quality="false" unlock_level="23" />
     </insertAfter>
     <append xpath="/progression/crafting_skills/crafting_skill[@name='craftingRobotics']/effect_group">
-        <passive_effect name="RecipeTagUnlocked" operation="base_set" level="23,100" value="1" tags="cntRoboticInbox" />
+        <passive_effect name="RecipeTagUnlocked" operation="base_set" level="23,100" value="1" tags="cntRoboticInboxVariantHelper" />
     </append>
 </config>
