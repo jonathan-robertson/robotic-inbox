@@ -30,7 +30,6 @@
             <property name="AllowedRotations" value="Basic90" />
 
             <!-- trade -->
-            <property name="EconomicBundleSize" value="10" />
             <property name="SellableToTrader" value="false" />
 
             <!-- recipe -->
@@ -44,21 +43,18 @@
             <drop event="Destroy" name="resourceElectricParts" count="0,3" />
             <drop event="Fall" name="scrapMetalPile" count="1" prob="0.75" stick_chance="1" />
             <property class="RepairItems">
-                <property name="resourceForgedIron" value="2" />
-                <property name="resourceMetalPipe" value="1" />
-                <property name="resourceMechanicalParts" value="3" />
-                <property name="resourceElectricParts" value="4" />
+                <property name="resourceForgedIron" value="1" />
+                <property name="resourceMechanicalParts" value="1" />
+                <property name="resourceElectricParts" value="1" />
             </property>
             <property name="DowngradeBlock" value="cntRoboticInboxInsecure" />
 
             <!-- other properties -->
             <property name="Path" value="solid" />
             <property name="WaterFlow" value="permitted" />
-            <property name="SortOrder1" value="B106" />
-            <property name="SortOrder2" value="0000" />
-            <property name="Group" value="Basics,Building,advBuilding" />
-            <property name="Tags" value="timecharge" /> <!-- TODO: add 'roboticinbox' tag-->
-            <property name="FilterTags" value="MC_playerBlocks,SC_decor" />
+            <property name="SortOrder1" value="U900" />
+            <property name="SortOrder2" value="0001" />
+            <property name="Tags" value="timecharge,roboticinbox" />
         </block>
         <block name="cntRoboticInboxInsecure">
             <property name="CreativeMode" value="Player" />
@@ -104,13 +100,11 @@
             <drop event="Fall" name="scrapMetalPile" count="1" prob="0.75" stick_chance="1" />
             <property class="RepairItems">
                 <property name="resourceForgedIron" value="2" />
-                <property name="resourceMetalPipe" value="1" />
-                <property name="resourceMechanicalParts" value="3" />
-                <property name="resourceElectricParts" value="4" />
+                <property name="resourceMechanicalParts" value="2" />
             </property>
             <property class="UpgradeBlock"> <!-- repair busted lock! -->
                 <property name="ToBlock" value="cntRoboticInbox" />
-                <property name="Item" value="resourceForgedIron" />
+                <property name="Item" value="resourceElectricParts" />
                 <property name="ItemCount" value="2" />
                 <property name="UpgradeHitCount" value="4" />
             </property>
@@ -119,9 +113,9 @@
             <!-- other properties -->
             <property name="Path" value="solid" />
             <property name="WaterFlow" value="permitted" />
-            <property name="SortOrder1" value="B106" />
+            <property name="SortOrder1" value="U900" />
             <property name="SortOrder2" value="0001" />
-            <property name="FilterTags" value="MC_playerBlocks,SC_decor" />
+            <property name="Tags" value="roboticinboxinsecure" />
         </block>
 
         <block name="cntRoboticInboxRed">
@@ -339,8 +333,7 @@
 
             <!-- trade -->
             <property name="TraderStageTemplate" value="electricTier1" />
-            <property name="EconomicValue" value="150" />
-            <property name="EconomicBundleSize" value="10" />
+            <property name="EconomicValue" value="500" />
             <property name="SellableToTrader" value="true" />
 
             <!-- recipe -->
@@ -351,8 +344,9 @@
             <property name="PlaceAltBlockValue" value="cntRoboticInbox,cntRoboticInboxRed,cntRoboticInboxOrange,cntRoboticInboxYellow,cntRoboticInboxGreen,cntRoboticInboxPurple,cntRoboticInboxPink,cntRoboticInboxGrey,cntRoboticInboxWhite,cntRoboticInboxArmyGreen,cntRoboticInboxCobalt" />
 
             <!-- other properties -->
-            <property name="SortOrder1" value="U200" />
+            <property name="SortOrder1" value="U900" />
             <property name="SortOrder2" value="0000" />
+            <property name="Group" value="Building,TCScience,advBuilding" />
             <property name="FilterTags" value="MC_playerBlocks,SC_playerHelpers" />
         </block>
     </append>

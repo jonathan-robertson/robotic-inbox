@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ ] add support for local and p2p, if possible
 - [x] fix compilation errors
 - [x] fix recipe: value -> count in 1.0
+- [x] fix trader category -> match workbench
 - [x] remove journal tips (discontinued in 1.0)
 - [x] rename inbox blocks to follow new naming standards
 - [ ] test mechanics online
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [ ] side-by-side LCBs are (expected to not be) transferrable (even) if owned by same player
 - [x] update model to washing machine
   - [x] add multiple color options
+  - [ ] add tag to colors and scan for block tags
 - [x] update recipe: reduce forged iron, add pipe
 - [x] update references to storage; this has updated to something new
 - [x] verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)
