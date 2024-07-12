@@ -1,6 +1,6 @@
 # Robotic Inbox
 
-[![🧪 Tested On](https://img.shields.io/badge/🧪%20Tested%20On-1.0%20b313-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
+[![🧪 Tested On](https://img.shields.io/badge/🧪%20Tested%20On-1.0%20b316-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
 
 - [Robotic Inbox](#robotic-inbox)
   - [Summary](#summary)

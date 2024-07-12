@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] update recipe: reduce forged iron, add pipe
 - [x] update references to storage; this has updated to something new
 - [x] verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)
-- [x] update references for 7dtd-1.0
+- [x] update references for 7dtd-1.0 b316
 - [x] update readme with screenshots
 
 ## [3.0.1] - 2023-11-21
