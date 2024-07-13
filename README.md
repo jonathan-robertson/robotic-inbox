@@ -17,6 +17,8 @@
   - [Setup](#setup)
     - [Environment / EAC / Hosting Requirements](#environment--eac--hosting-requirements)
     - [Map Considerations for Installation or Uninstallation](#map-considerations-for-installation-or-uninstallation)
+    - [Windows PC (Single Player or Hosting P2P)](#windows-pc-single-player-or-hosting-p2p)
+      - [Critical Reminders](#critical-reminders)
     - [Windows/Linux Installation (Server via FTP from Windows PC)](#windowslinux-installation-server-via-ftp-from-windows-pc)
     - [Linux Server Installation (Server via SSH)](#linux-server-installation-server-via-ssh)
 
@@ -109,8 +111,8 @@ If you have trouble getting things working, you can reach out to me for support 
 Environment | Compatible | Does EAC Need to be Disabled? | Who needs to install?
 --- | --- | --- | ---
 Dedicated Server | Yes | no | only server
-Peer-to-Peer Hosting | [Not Yet](https://github.com/jonathan-robertson/robotic-inbox/issues/29) | only on the host | only the host
-Single Player Game | [Not Yet](https://github.com/jonathan-robertson/robotic-inbox/issues/29) | Yes | self (of course)
+Peer-to-Peer Hosting | Yes | only on the host | only the host
+Single Player Game | Yes | Yes | self (of course)
 
 > 🤔 If you aren't sure what some of this means, details steps are provided below to walk you through the setup process.
 
@@ -120,6 +122,26 @@ Single Player Game | [Not Yet](https://github.com/jonathan-robertson/robotic-inb
   - No! You can drop this mod into an ongoing map without any trouble.
 - Does **removing** this mod require a fresh map?
   - Since this mod adds new blocks, removing it from a map could cause some issues: previously placed robotic inbox blocks would now throw exceptions in your logs, at the very least.
+
+### Windows PC (Single Player or Hosting P2P)
+
+> ℹ️ If you plan to host a multiplayer game, only the host PC will need to install this mod. Other players connecting to your session do not need to install anything for this mod to work 😉
+
+1. 📦 Download the latest release by navigating to [this link](https://github.com/jonathan-robertson/robotic-inbox/releases/latest/) and clicking the link for `robotic-inbox.zip`
+2. 📂 Unzip this file to a folder named `robotic-inbox` by right-clicking it and choosing the `Extract All...` option (you will find Windows suggests extracting to a new folder named `robotic-inbox` - this is the option you want to use)
+3. 🕵️ Locate and create your mods folder (if missing): in another Windows Explorer window or tab, paste `%APPDATA%\7DaysToDie` into your address bar and, double-click your `Mods` folder to enter it.
+   - *If no `Mods` folder is present, you will first need to create it, then enter your `Mods` folder after that*
+4. 🚚 Move your new `robotic-inbox` folder into your `Mods` folder by dragging & dropping or cutting/copying & pasting, whichever you prefer
+5. ♻️ Stop the game if it's currently running, then start the game again without EAC by navigating to your install folder and running `7DaysToDie.exe`
+    - running from Steam or other launchers usually starts 7 Days up with the `7DaysToDie_EAC.exe` program instead, but running 7 Days directly will skip EAC startup
+
+#### Critical Reminders
+
+- ⚠️ it is **NECESSARY** for the host to run with EAC disabled or the DLL file in this mod will not be able to run
+- 😉 other players **DO NOT** need to disable EAC in order to connect to your game session, so you don't need to walk them through these steps
+- 🔑 it is also **HIGHLY RECOMMENDED** to add a password to your game session
+  - while disabling EAC is 100% necessary (for P2P or single player) to run this mod properly, it also allows other players to run any mods they want on their end (which could be used to gain access to admin commands and/or grief you or your other players)
+  - please note that *dedicated servers* do not have this limitation and can have EAC fully enabled; we have setup guides for dedicated servers as well, listed in the next 2 sections: [Windows/Linux Installation (Server via FTP from Windows PC)](#windowslinux-installation-server-via-ftp-from-windows-pc) and [Linux Server Installation (Server via SSH)](#linux-server-installation-server-via-ssh)
 
 ### Windows/Linux Installation (Server via FTP from Windows PC)
 
