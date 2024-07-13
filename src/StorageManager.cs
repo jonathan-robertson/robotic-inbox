@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RoboticInbox.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,11 +10,8 @@ namespace RoboticInbox
     {
         private static readonly ModLog<StorageManager> _log = new ModLog<StorageManager>();
 
-        private const string ModMaintainer = "kanaverum";
-        private const string SupportLink = "https://discord.gg/hYa2sNHXya";
-
-        private const int yMin = 0;
-        private const int yMax = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
+        public const int Y_MIN = 0;
+        public const int Y_MAX = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
 
         private static readonly FastTags<TagGroup.Global> roboticinboxTag = FastTags<TagGroup.Global>.Parse("roboticinbox");
         private static readonly FastTags<TagGroup.Global> roboticinboxinsecureTag = FastTags<TagGroup.Global>.Parse("roboticinboxinsecure");
@@ -25,7 +23,6 @@ namespace RoboticInbox
         public static List<int> InboxBlockIds { get; private set; } = new List<int>();
         public static List<int> InsecureInboxBlockIds { get; private set; } = new List<int>();
         public static int LandClaimRadius { get; private set; }
-        public static int InboxRange { get; private set; } = 5;
         public static Dictionary<Vector3i, Coroutine> ActiveCoroutines { get; private set; } = new Dictionary<Vector3i, Coroutine>();
 
         internal static void OnGameStartDone()
@@ -93,26 +90,26 @@ namespace RoboticInbox
             }
             _log.Debug($"minMapSize: {_minMapSize}, maxMapSize: {_maxMapSize}, actualMapSize: {_maxMapSize - _minMapSize}");
 
-            if (TryGetActiveLandClaimPosContaining(source, out var lcbPos))
+            if (SettingsManager.BaseSiphoningProtection && TryGetActiveLandClaimPosContaining(source, out var lcbPos))
             {
                 _log.Debug($"Land Claim was found containing {source} (pos: {lcbPos}); clamping to world and land claim coordinates.");
-                min.x = FastMax(source.x - InboxRange, lcbPos.x - LandClaimRadius, _minMapSize.x);
-                min.z = FastMax(source.z - InboxRange, lcbPos.z - LandClaimRadius, _minMapSize.z);
-                min.y = FastMax(source.y - InboxRange, yMin, _minMapSize.y);
-                max.x = FastMin(source.x + InboxRange, lcbPos.x + LandClaimRadius, _maxMapSize.x);
-                max.z = FastMin(source.z + InboxRange, lcbPos.z + LandClaimRadius, _maxMapSize.z);
-                max.y = FastMin(source.y + InboxRange, yMax, _maxMapSize.y);
+                min.x = FastMax(source.x - SettingsManager.InboxHorizontalRange, lcbPos.x - LandClaimRadius, _minMapSize.x);
+                min.z = FastMax(source.z - SettingsManager.InboxHorizontalRange, lcbPos.z - LandClaimRadius, _minMapSize.z);
+                min.y = FastMax(source.y - SettingsManager.InboxVerticalRange, Y_MIN, _minMapSize.y);
+                max.x = FastMin(source.x + SettingsManager.InboxHorizontalRange, lcbPos.x + LandClaimRadius, _maxMapSize.x);
+                max.z = FastMin(source.z + SettingsManager.InboxHorizontalRange, lcbPos.z + LandClaimRadius, _maxMapSize.z);
+                max.y = FastMin(source.y + SettingsManager.InboxVerticalRange, Y_MAX, _maxMapSize.y);
                 _log.Debug($"clampedMin: {min}, clampedMax: {max}.");
                 return;
             }
 
             _log.Debug($"Land Claim not found containing {source}; clamping to world coordinates only.");
-            min.x = Utils.FastMax(source.x - InboxRange, _minMapSize.x);
-            min.z = Utils.FastMax(source.z - InboxRange, _minMapSize.z);
-            min.y = FastMax(source.y - InboxRange, yMin, _minMapSize.y);
-            max.x = Utils.FastMin(source.x + InboxRange, _maxMapSize.x);
-            max.z = Utils.FastMin(source.z + InboxRange, _maxMapSize.z);
-            max.y = FastMin(source.y + InboxRange, yMax, _maxMapSize.y);
+            min.x = Utils.FastMax(source.x - SettingsManager.InboxHorizontalRange, _minMapSize.x);
+            min.z = Utils.FastMax(source.z - SettingsManager.InboxHorizontalRange, _minMapSize.z);
+            min.y = FastMax(source.y - SettingsManager.InboxVerticalRange, Y_MIN, _minMapSize.y);
+            max.x = Utils.FastMin(source.x + SettingsManager.InboxHorizontalRange, _maxMapSize.x);
+            max.z = Utils.FastMin(source.z + SettingsManager.InboxHorizontalRange, _maxMapSize.z);
+            max.y = FastMin(source.y + SettingsManager.InboxVerticalRange, Y_MAX, _maxMapSize.y);
             _log.Debug($"clampedMin: {min}, clampedMax: {max}.");
             return;
         }
@@ -385,7 +382,7 @@ namespace RoboticInbox
         {
             if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
             {
-                _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signable, owner, "Can't Distribute: Container Locked without password")); // TODO: test 2
+                _ = ThreadManager.StartCoroutine(ShowTemporaryText(SettingsManager.DistributionBlockedNoticeTime, signable, owner, "Can't Distribute: Container Locked without password")); // TODO: test 2
             }
             GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
         }
@@ -394,7 +391,7 @@ namespace RoboticInbox
         {
             if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
             {
-                _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signable, owner, "Can't Distribute: Container Locked but Inbox is not")); // TODO: good!
+                _ = ThreadManager.StartCoroutine(ShowTemporaryText(SettingsManager.DistributionBlockedNoticeTime, signable, owner, "Can't Distribute: Container Locked but Inbox is not"));
             }
             GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
         }
@@ -403,7 +400,7 @@ namespace RoboticInbox
         {
             if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
             {
-                _ = ThreadManager.StartCoroutine(ShowTemporaryText(3, signable, owner, "Can't Distribute: Password Does not match Inbox")); // TODO: test 2
+                _ = ThreadManager.StartCoroutine(ShowTemporaryText(SettingsManager.DistributionBlockedNoticeTime, signable, owner, "Can't Distribute: Password Does not match Inbox"));
             }
             GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
         }
@@ -412,7 +409,7 @@ namespace RoboticInbox
         {
             if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
             {
-                _ = ThreadManager.StartCoroutine(ShowTemporaryText(2, signable, owner, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
+                _ = ThreadManager.StartCoroutine(ShowTemporaryText(SettingsManager.DistributionSuccessNoticeTime, signable, owner, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
             }
             GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageClose, AudioRolloffMode.Logarithmic, 5);
         }

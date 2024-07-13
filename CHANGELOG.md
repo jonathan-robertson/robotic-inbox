@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - TBD
 
-- [ ] add feature for admins to modify area of effect and update `cntRoboticInboxDesc` to reference cvar (request from Blight)
+- [ ] add new admin options
+  - [x] add ability to adjust how long sign notices appear
+  - [x] add feature for admins to modify area of effect
+    - [ ] update `cntRoboticInboxDesc` to reference cvar (request from Blight)
 - [x] add repairable locks
   - [ ] patch `public override void UpgradeDowngradeFrom(TileEntityComposite _other)` to apply the *repairer* as the owner if the previous block has tag `roboticinboxinsecure`
   - [ ] or... maybe flush owner if downgrading *to* block with tag `roboticinboxinsecure`... will system substitute the new block owner on repair at that point?
@@ -31,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)
 - [x] update references for 7dtd-1.0 b316
 - [x] update readme with screenshots
+- [ ] update to prioritize scanning closes containers first
 
 ## [3.0.1] - 2023-11-21
 
