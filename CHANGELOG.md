@@ -11,9 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] add repairable locks
   - [ ] patch `public override void UpgradeDowngradeFrom(TileEntityComposite _other)` to apply the *repairer* as the owner if the previous block has tag `roboticinboxinsecure`
   - [ ] or... maybe flush owner if downgrading *to* block with tag `roboticinboxinsecure`... will system substitute the new block owner on repair at that point?
-- [ ] add support for local and p2p, if possible
+- [x] add support for local and p2p, if possible
   - [x] trigger distribution on p2p host
-  - [ ] trigger sign update on p2p host
+  - [x] trigger sign update on p2p host
 - [x] fix compilation errors
 - [x] fix recipe: value -> count in 1.0
 - [x] fix trader category -> match workbench

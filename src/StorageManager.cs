@@ -426,15 +426,10 @@ namespace RoboticInbox
             }
 
             var originalText = signableEntity.GetAuthoredText().Text;
-            _log.Trace($"sending temporary text to players: {text}"); // TODO: REMOVE
+            _log.Trace($"setting temporary text for {signableEntity.blockValue.Block.blockName} to:\n{text}");
             signableEntity.SetText(text, true, signingPlayer); // update with new text (and sync to players)
-
-            // update server with original text again in case of shutdown or container destroy before yield completes
-            signableEntity.SetText(originalText, false, signingPlayer); // update with original text (and do NOT sync to players)
             yield return new WaitForSeconds(seconds);
-            _log.Trace($"sending original text to players: {originalText}");
-            // flush value with something new so system respects next change for network
-            signableEntity?.SetText(originalText != "x" ? "x" : "y", false, signingPlayer);
+            _log.Trace($"returning original text for {signableEntity.blockValue.Block.blockName} to:\n{originalText}");
             signableEntity?.SetText(originalText, true, signingPlayer); // sync original text to players
         }
 
