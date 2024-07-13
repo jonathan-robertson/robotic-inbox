@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="Commands\ConsoleCmdRoboticInbox.cs" />
     <Compile Include="ModApi.cs" />
+    <Compile Include="Patches\GameManager.cs" />
     <Compile Include="Utilities\ModLog.cs" />
     <Compile Include="Patches\NetPackageTELock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
