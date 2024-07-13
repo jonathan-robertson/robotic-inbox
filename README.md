@@ -10,6 +10,7 @@
     - [Dynamic Hints](#dynamic-hints)
     - [Repairable Locks (new to v4)](#repairable-locks-new-to-v4)
     - [Multiple Colors (new to v4)](#multiple-colors-new-to-v4)
+    - [Configuration Options (new to v4)](#configuration-options-new-to-v4)
   - [Info](#info)
     - [What Happens to Leftovers?](#what-happens-to-leftovers)
     - [How Would I Acquire a Robotic Inbox In-Game?](#how-would-i-acquire-a-robotic-inbox-in-game)
@@ -69,6 +70,27 @@ If someone busts your lock, you can replace the lock simply by repairing it. Thi
 
 ![robotic inboxes with colors (lit)](https://raw.githubusercontent.com/jonathan-robertson/robotic-inbox/media/robotic-inbox-colors-lit.png)
 > *lit in daylight with a headlamp*
+
+### Configuration Options (new to v4)
+
+You now have a slew of options you can use to fine-tune the experience for yourself and any other players who happen to join your game!
+
+Command | Default/Recommended Value | Constraints | Description | Impact
+--- | :---: | --- | ---
+`help roboticinbox` | N/A | N/A | Receive help information about the set of commands this mod provides | N/A
+`ri horizontal-range <int>` | 5 | 0 to 128 | set how wide (x/z axes) the inbox should scan for storage containers | very high
+`ri vertical-range <int>` | 5 | -1 to 253 (-1 = bedrock-to-sky) | set how high/low (y axis) the inbox should scan for storage containers | high
+`ri success-notice-time <float>` | 2.0 | 0.0 to 10.0 | set how long to leave distribution success notice on boxes | N/A
+`ri blocked-notice-time <float>` | 3.0 | 0.0 to 10.0 | set how long to leave distribution blocked notice on boxes | N/A
+`ri base-siphoning-protection <bool>` | True | True or False | whether inboxes within claimed land should prevent scanning outside the bounds of their lcb | N/A
+`ri debug` | False | True or False | toggle debug logging mode | medium
+
+> 📝 Settings like `horizontal-range` and `vertical-range` will actually update the block description for your players as well, so things remain clear and accurate. Changes made during runtime will even auto-update the block description for all online players, too!
+
+> 💾 Except for `debug`, these settings are retained in a file on the host system:
+>
+> - Windows: `%AppData%\Roaming\7DaysToDie\Saves\MapName\GameName\robotic-inbox.json`
+> - Linux: `~/.local/.local/share/7DaysToDie/Saves/MapName/GameName/robotic-inbox.json`
 
 ## Info
 

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] add support for local and p2p, if possible
   - [x] trigger distribution on p2p host
   - [x] trigger sign update on p2p host
+- [ ] fix but when opening inbox multiple times: surrounding containers forget original text
 - [x] fix compilation errors
 - [x] fix recipe: value -> count in 1.0
 - [x] fix trader category -> match workbench

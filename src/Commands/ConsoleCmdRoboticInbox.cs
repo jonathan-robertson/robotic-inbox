@@ -18,10 +18,10 @@ namespace RoboticInbox
             var dict = new Dictionary<string, string>() {
                 { "settings", "list current settings alongside default/recommended values" },
                 { "horizontal-range <int>", "set how wide (x/z axes) the inbox should scan for storage containers" },
-                { "vertical-range <int>", "set how high/low (y zxis) the inbox should scan for storage containers" },
+                { "vertical-range <int>", "set how high/low (y axis) the inbox should scan for storage containers" },
                 { "success-notice-time <float>", "set how long to leave distribution success notice on boxes" },
                 { "blocked-notice-time <float>", "set how long to leave distribution blocked notice on boxes" },
-                { "base-siphoning-protection", "whether inboxes within claimed land should prevent scanning outide the bounds of their lcb" },
+                { "base-siphoning-protection <bool>", "whether inboxes within claimed land should prevent scanning outside the bounds of their lcb" },
                 //{ "base-fishing-protection", "whether inboxes outside claimed land should be blocked from scanning containers within claimed land (or other land claims)" },
                 { "debug", "toggle debug logging mode" },
             };
