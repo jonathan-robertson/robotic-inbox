@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)
 - [x] update references for 7dtd-1.0 b316
 - [x] update readme with screenshots
-- [ ] update to prioritize scanning closes containers first
+- [x] update to prioritize scanning closes containers first
 
 ## [3.0.1] - 2023-11-21
 

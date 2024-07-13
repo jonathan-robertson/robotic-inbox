@@ -76,6 +76,11 @@ namespace RoboticInbox
             }
 
             GetBoundsWithinWorldAndLandClaim(sourcePos, out var min, out var max);
+            if (min == max)
+            {
+                _log.Debug($"Min and Max ranges to scan for containers are equal, so there is no range to scan containers within.");
+                return;
+            }
             ActiveCoroutines.Add(sourcePos, ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, source, sourceContainer, min, max)));
         }
 
@@ -94,22 +99,38 @@ namespace RoboticInbox
             {
                 _log.Debug($"Land Claim was found containing {source} (pos: {lcbPos}); clamping to world and land claim coordinates.");
                 min.x = FastMax(source.x - SettingsManager.InboxHorizontalRange, lcbPos.x - LandClaimRadius, _minMapSize.x);
-                min.z = FastMax(source.z - SettingsManager.InboxHorizontalRange, lcbPos.z - LandClaimRadius, _minMapSize.z);
-                min.y = FastMax(source.y - SettingsManager.InboxVerticalRange, Y_MIN, _minMapSize.y);
                 max.x = FastMin(source.x + SettingsManager.InboxHorizontalRange, lcbPos.x + LandClaimRadius, _maxMapSize.x);
+                min.z = FastMax(source.z - SettingsManager.InboxHorizontalRange, lcbPos.z - LandClaimRadius, _minMapSize.z);
                 max.z = FastMin(source.z + SettingsManager.InboxHorizontalRange, lcbPos.z + LandClaimRadius, _maxMapSize.z);
-                max.y = FastMin(source.y + SettingsManager.InboxVerticalRange, Y_MAX, _maxMapSize.y);
+                if (SettingsManager.InboxVerticalRange == -1)
+                {
+                    min.y = Utils.FastMax(Y_MIN, _minMapSize.y);
+                    max.y = Utils.FastMin(Y_MAX, _maxMapSize.y);
+                }
+                else
+                {
+                    min.y = FastMax(source.y - SettingsManager.InboxVerticalRange, Y_MIN, _minMapSize.y);
+                    max.y = FastMin(source.y + SettingsManager.InboxVerticalRange, Y_MAX, _maxMapSize.y);
+                }
                 _log.Debug($"clampedMin: {min}, clampedMax: {max}.");
                 return;
             }
 
             _log.Debug($"Land Claim not found containing {source}; clamping to world coordinates only.");
             min.x = Utils.FastMax(source.x - SettingsManager.InboxHorizontalRange, _minMapSize.x);
-            min.z = Utils.FastMax(source.z - SettingsManager.InboxHorizontalRange, _minMapSize.z);
-            min.y = FastMax(source.y - SettingsManager.InboxVerticalRange, Y_MIN, _minMapSize.y);
             max.x = Utils.FastMin(source.x + SettingsManager.InboxHorizontalRange, _maxMapSize.x);
+            min.z = Utils.FastMax(source.z - SettingsManager.InboxHorizontalRange, _minMapSize.z);
             max.z = Utils.FastMin(source.z + SettingsManager.InboxHorizontalRange, _maxMapSize.z);
-            max.y = FastMin(source.y + SettingsManager.InboxVerticalRange, Y_MAX, _maxMapSize.y);
+            if (SettingsManager.InboxVerticalRange == -1)
+            {
+                min.y = Utils.FastMax(Y_MIN, _minMapSize.y);
+                max.y = Utils.FastMin(Y_MAX, _maxMapSize.y);
+            }
+            else
+            {
+                min.y = FastMax(source.y - SettingsManager.InboxVerticalRange, Y_MIN, _minMapSize.y);
+                max.y = FastMin(source.y + SettingsManager.InboxVerticalRange, Y_MAX, _maxMapSize.y);
+            }
             _log.Debug($"clampedMin: {min}, clampedMax: {max}.");
             return;
         }
@@ -149,62 +170,141 @@ namespace RoboticInbox
             return Utils.FastMin(v1, Utils.FastMin(v2, v3));
         }
 
-        private static IEnumerator OrganizeCoroutineNew(int clrIdx, Vector3i sourcePos, TileEntity source, ITileEntityLootable sourceContainer, Vector3i min, Vector3i max)
+        private static int FindMaxDistance(Vector3i v1, Vector3i v2)
         {
-            if (min == max) { return null; } // end it here
-
-            _ = GameManager.Instance.World;
-
-
-            // TODO: loop through horizontal squares, radiating out from center
-            var x = 0;
-            while (true)
+            var maxValue = 0;
+            foreach (var val in new List<int>() { v1.z, v1.y, v1.z, v2.x, v2.y, v2.z })
             {
-                if (x > max.x)
+                if (maxValue < val)
                 {
-
+                    maxValue = val;
                 }
             }
-
-            _ = ActiveCoroutines.Remove(sourcePos);
+            return maxValue;
         }
+
+        private static bool IsWithin(int x, int y, int z, Vector3i min, Vector3i max)
+        {
+            return x >= min.x
+                && x <= max.x
+                && y >= min.y
+                && y <= max.y
+                && z >= min.z
+                && z <= max.z;
+        }
+
 
         private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntity source, ITileEntityLootable sourceContainer, Vector3i min, Vector3i max)
         {
-            // TODO: optimize this
-            // TODO: possibly check at most... 1 slice of x at a time?
-            //  see how much time it will take to yield after each vertical cross-section of x/z at a time
-            //  test by returning entire map for clamped range and see if it halts zombies
-            var world = GameManager.Instance.World;
-            Vector3i targetPos;
-            for (var y = min.y; y <= max.y; y++)
+            // NOTE: While the repitition is really gross, it does achieve O(n), vs a 'cleaner' set of loops that would be O(n^2)
+            var maxDist = FindMaxDistance(sourcePos - min, max - sourcePos);
+            for (var distance = 1; distance <= maxDist; distance++)
             {
-                targetPos.y = y;
-                for (var x = min.x; x <= max.x; x++)
+                // bottom slice
+                if (sourcePos.y - distance >= min.y)
                 {
-                    targetPos.x = x;
-                    for (var z = min.z; z <= max.z; z++)
+                    var y = sourcePos.y - distance;
+                    for (var x = Utils.FastMax(sourcePos.x - distance, min.x); x <= Utils.FastMin(sourcePos.x + distance, max.x); x++)
                     {
-                        targetPos.z = z;
-                        if (targetPos != sourcePos) // avoid targeting self (duh)
+                        for (var z = Utils.FastMax(sourcePos.z - distance, min.z); z <= Utils.FastMax(sourcePos.z + distance, max.z); z++)
                         {
-                            var target = world.GetTileEntity(clrIdx, targetPos);
-                            if (VerifyContainer(target, out var targetContainer))
+                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
                                 Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
                             }
                         }
                     }
-                    //yield return null; // [way too slow] free up game frame after scanning each y/x column
                 }
-                yield return null; // free up game frame after scanning each y slice
+                // top slice
+                if (sourcePos.y + distance <= max.y)
+                {
+                    var y = sourcePos.y + distance;
+                    for (var x = Utils.FastMax(sourcePos.x - distance, min.x); x <= Utils.FastMin(sourcePos.x + distance, max.x); x++)
+                    {
+                        for (var z = Utils.FastMax(sourcePos.z - distance, min.z); z <= Utils.FastMax(sourcePos.z + distance, max.z); z++)
+                        {
+                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            {
+                                yield return null; // free up frames just before each distribute
+                                Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
+                            }
+                        }
+                    }
+                }
+                // south face
+                if (sourcePos.z - distance >= min.z)
+                {
+                    var z = sourcePos.z - distance;
+                    for (var y = Utils.FastMax(sourcePos.y - distance + 1, min.y); y <= Utils.FastMin(sourcePos.y + distance - 1, max.y); y++)
+                    {
+                        for (var x = Utils.FastMax(sourcePos.x - distance, min.x); x <= Utils.FastMin(sourcePos.x + distance, max.x); x++)
+                        {
+                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            {
+                                yield return null; // free up frames just before each distribute
+                                Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
+                            }
+                        }
+                    }
+                }
+                // north face
+                if (sourcePos.z + distance <= max.z)
+                {
+                    var z = sourcePos.z + distance;
+                    for (var y = Utils.FastMax(sourcePos.y - distance + 1, min.y); y <= Utils.FastMin(sourcePos.y + distance - 1, max.y); y++)
+                    {
+                        for (var x = Utils.FastMax(sourcePos.x - distance, min.x); x <= Utils.FastMin(sourcePos.x + distance, max.x); x++)
+                        {
+                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            {
+                                yield return null; // free up frames just before each distribute
+                                Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
+                            }
+                        }
+                    }
+                }
+                // west face
+                if (sourcePos.x - distance >= min.x)
+                {
+                    var x = sourcePos.x - distance;
+                    for (var y = Utils.FastMax(sourcePos.y - distance + 1, min.y); y <= Utils.FastMin(sourcePos.y + distance - 1, max.y); y++)
+                    {
+                        for (var z = Utils.FastMax(sourcePos.z - distance + 1, min.z); z <= Utils.FastMin(sourcePos.z + distance - 1, max.z); z++)
+                        {
+                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            {
+                                yield return null; // free up frames just before each distribute
+                                Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
+                            }
+                        }
+                    }
+                }
+                // east face
+                if (sourcePos.x + distance <= max.x)
+                {
+                    var x = sourcePos.x + distance;
+                    for (var y = Utils.FastMax(sourcePos.y - distance + 1, min.y); y <= Utils.FastMin(sourcePos.y + distance - 1, max.y); y++)
+                    {
+                        for (var z = Utils.FastMax(sourcePos.z - distance + 1, min.z); z <= Utils.FastMin(sourcePos.z + distance - 1, max.z); z++)
+                        {
+                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            {
+                                yield return null; // free up frames just before each distribute
+                                Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
+                            }
+                        }
+                    }
+                }
+                yield return null; // free up frames just before distance grows
             }
             _ = ActiveCoroutines.Remove(sourcePos);
         }
 
-        private static bool VerifyContainer(TileEntity entity, out ITileEntityLootable tileEntityLootContainer)
+        private static bool VerifyContainer(int clrIdx, int x, int y, int z, out Vector3i pos, out TileEntity entity, out ITileEntityLootable tileEntityLootContainer)
         {
+            pos = new Vector3i(x, y, z);
+            entity = GameManager.Instance.World.GetTileEntity(clrIdx, pos);
             return TryCastAsContainer(entity, out tileEntityLootContainer)
                 && tileEntityLootContainer.bPlayerStorage
                 && !tileEntityLootContainer.bPlayerBackpack

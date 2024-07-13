@@ -44,7 +44,7 @@ Notices: keeping these as low as possible is best because a server restart while
 Security: these options are meant to protect the players from fishing or siphoning, but might not be preferred by everyone
 - base-siphoning-protection: {BaseSiphoningProtection} [recommended: True]
 Temporary Values: server starts with this in a default state and does not save them to the settings file
-- debug mode: {(ModApi.DebugMode ? "enabled" : "disabled")}";
+- debug mode: {(ModApi.DebugMode ? "enabled" : "disabled")} [recommended: False - enabling this adds a lot of overhead and should only be running for debugging purposes]";
         }
 
         internal static void Load()
