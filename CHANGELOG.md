@@ -7,10 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - TBD
 
-- [ ] add new admin options
+- [x] add new admin options
   - [x] add ability to adjust how long sign notices appear
   - [x] add feature for admins to modify area of effect
-    - [ ] update `cntRoboticInboxDesc` to reference cvar (request from Blight)
+    - [x] update `cntRoboticInboxDesc` to reference cvar
 - [x] add repairable locks
   - [ ] patch `public override void UpgradeDowngradeFrom(TileEntityComposite _other)` to apply the *repairer* as the owner if the previous block has tag `roboticinboxinsecure`
   - [ ] or... maybe flush owner if downgrading *to* block with tag `roboticinboxinsecure`... will system substitute the new block owner on repair at that point?

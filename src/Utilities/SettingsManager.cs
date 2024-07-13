@@ -108,14 +108,50 @@ Temporary Values: server starts with this in a default state and does not save t
         {
             Settings.InboxHorizontalRange = Clamp(value, H_DIST_MIN, H_DIST_MAX);
             Save();
+            PropagateHorizontalRange();
             return Settings.InboxHorizontalRange;
+        }
+
+        internal static void PropagateHorizontalRange(EntityPlayer player)
+        {
+            player.SetCVar("roboticInboxRangeH", Settings.InboxHorizontalRange);
+        }
+
+        private static void PropagateHorizontalRange()
+        {
+            for (var i = 0; i < GameManager.Instance.World.GetLocalPlayers().Count; i++)
+            {
+                PropagateHorizontalRange(GameManager.Instance.World.GetLocalPlayers()[i]);
+            }
+            for (var i = 0; i < GameManager.Instance.World.Players.list.Count; i++)
+            {
+                PropagateHorizontalRange(GameManager.Instance.World.Players.list[i]);
+            }
         }
 
         internal static int SetInboxVerticalRange(int value)
         {
             Settings.InboxVerticalRange = Clamp(value, V_DIST_MIN, V_DIST_MAX);
             Save();
+            PropagateVerticalRange();
             return Settings.InboxVerticalRange;
+        }
+
+        internal static void PropagateVerticalRange(EntityPlayer player)
+        {
+            player.SetCVar("roboticInboxRangeV", Settings.InboxVerticalRange);
+        }
+
+        private static void PropagateVerticalRange()
+        {
+            for (var i = 0; i < GameManager.Instance.World.GetLocalPlayers().Count; i++)
+            {
+                PropagateVerticalRange(GameManager.Instance.World.GetLocalPlayers()[i]);
+            }
+            for (var i = 0; i < GameManager.Instance.World.Players.list.Count; i++)
+            {
+                PropagateVerticalRange(GameManager.Instance.World.Players.list[i]);
+            }
         }
 
         internal static bool SetBaseSiphoningProtection(bool value)

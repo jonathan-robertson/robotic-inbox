@@ -149,6 +149,26 @@ namespace RoboticInbox
             return Utils.FastMin(v1, Utils.FastMin(v2, v3));
         }
 
+        private static IEnumerator OrganizeCoroutineNew(int clrIdx, Vector3i sourcePos, TileEntity source, ITileEntityLootable sourceContainer, Vector3i min, Vector3i max)
+        {
+            if (min == max) { return null; } // end it here
+
+            _ = GameManager.Instance.World;
+
+
+            // TODO: loop through horizontal squares, radiating out from center
+            var x = 0;
+            while (true)
+            {
+                if (x > max.x)
+                {
+
+                }
+            }
+
+            _ = ActiveCoroutines.Remove(sourcePos);
+        }
+
         private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntity source, ITileEntityLootable sourceContainer, Vector3i min, Vector3i max)
         {
             // TODO: optimize this

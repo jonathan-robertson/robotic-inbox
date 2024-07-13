@@ -21,6 +21,7 @@ namespace RoboticInbox
                 new Harmony(GetType().ToString()).PatchAll(Assembly.GetExecutingAssembly());
                 SettingsManager.Load();
                 ModEvents.GameStartDone.RegisterHandler(OnGameStartDone);
+                ModEvents.PlayerSpawnedInWorld.RegisterHandler(OnPlayerSpawnedInWorld);
                 ModEvents.GameShutdown.RegisterHandler(OnGameShutdown);
             }
             catch (Exception e)
@@ -38,6 +39,50 @@ namespace RoboticInbox
             catch (Exception e)
             {
                 _log.Error("OnGameStartDone Failed", e);
+            }
+        }
+
+        private void OnPlayerSpawnedInWorld(ClientInfo clientInfo, RespawnType respawnType, Vector3i pos)
+        {
+            try
+            {
+                if (clientInfo == null)
+                {
+                    switch (respawnType)
+                    {
+                        case RespawnType.NewGame: // local player creating a new game
+                        case RespawnType.LoadedGame: // local player loading existing game
+                        case RespawnType.Died: // existing player returned from death
+                            for (var i = 0; i < GameManager.Instance.World.GetLocalPlayers().Count; i++)
+                            {
+                                SettingsManager.PropagateHorizontalRange(GameManager.Instance.World.GetLocalPlayers()[i]);
+                                SettingsManager.PropagateVerticalRange(GameManager.Instance.World.GetLocalPlayers()[i]);
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    if (!GameManager.Instance.World.Players.dict.TryGetValue(clientInfo.entityId, out var player) || !player.IsAlive())
+                    {
+                        return; // player not found or player not ready
+                    }
+
+                    switch (respawnType)
+                    {
+                        case RespawnType.EnterMultiplayer: // first-time login for new player
+                        case RespawnType.JoinMultiplayer: // existing player rejoining
+                        case RespawnType.Died: // existing player returned from death
+
+                            SettingsManager.PropagateHorizontalRange(player);
+                            SettingsManager.PropagateVerticalRange(player);
+                            break;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _log.Error("Failed to handle PlayerSpawnedInWorld event.", e);
             }
         }
 
