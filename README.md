@@ -83,14 +83,12 @@ Command | Default/Recommended Value | Constraints | Description | Impact
 `ri success-notice-time <float>` | 2.0 | 0.0 to 10.0 | set how long to leave distribution success notice on boxes | N/A
 `ri blocked-notice-time <float>` | 3.0 | 0.0 to 10.0 | set how long to leave distribution blocked notice on boxes | N/A
 `ri base-siphoning-protection <bool>` | True | True or False | whether inboxes within claimed land should prevent scanning outside the bounds of their lcb | N/A
-`ri debug` | False | True or False | toggle debug logging mode | medium
+`ri dm` | False | True or False | toggle debug logging mode | medium
 
-> 📝 Settings like `horizontal-range` and `vertical-range` will actually update the block description for your players as well, so things remain clear and accurate. Changes made during runtime will even auto-update the block description for all online players, too!
-
-> 💾 Except for `debug`, these settings are retained in a file on the host system:
->
-> - Windows: `%AppData%\Roaming\7DaysToDie\Saves\MapName\GameName\robotic-inbox.json`
-> - Linux: `~/.local/.local/share/7DaysToDie/Saves/MapName/GameName/robotic-inbox.json`
+> - 📝 Settings like `horizontal-range` and `vertical-range` will actually update the block description for your players as well, so things remain clear and accurate. Changes made during runtime will even auto-update the block description for all online players, too!
+> - 💾 Except for `debug`, these settings are retained in a file on the host system:
+>   - Windows: `%AppData%\Roaming\7DaysToDie\Saves\MapName\GameName\robotic-inbox.json`
+>   - Linux: `~/.local/.local/share/7DaysToDie/Saves/MapName/GameName/robotic-inbox.json`
 
 ## Info
 

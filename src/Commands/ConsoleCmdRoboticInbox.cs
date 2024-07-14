@@ -23,7 +23,7 @@ namespace RoboticInbox
                 { "blocked-notice-time <float>", "set how long to leave distribution blocked notice on boxes" },
                 { "base-siphoning-protection <bool>", "whether inboxes within claimed land should prevent scanning outside the bounds of their lcb" },
                 //{ "base-fishing-protection", "whether inboxes outside claimed land should be blocked from scanning containers within claimed land (or other land claims)" },
-                { "debug", "toggle debug logging mode" },
+                { "dm", "toggle debug logging mode" },
             };
             var i = 1; var j = 1;
             help = $"Usage:\n  {string.Join("\n  ", dict.Keys.Select(command => $"{i++}. {GetCommands()[0]} {command}").ToList())}\nDescription Overview\n{string.Join("\n", dict.Values.Select(description => $"{j++}. {description}").ToList())}";
@@ -131,9 +131,9 @@ namespace RoboticInbox
                         //        SdtdConsole.Instance.Output($"settings could not be saved to {SettingsManager.Filename} due to encountering an issue: {e.Message}");
                         //    }
                         //    return;
-                        case "debug":
+                        case "dm":
                             ModApi.DebugMode = !ModApi.DebugMode;
-                            SdtdConsole.Instance.Output($"debug mode has been {(ModApi.DebugMode ? "enabled" : "disabled")}.");
+                            SdtdConsole.Instance.Output($"debug logging mode has been {(ModApi.DebugMode ? "enabled" : "disabled")} for Robotic Inbox.");
                             return;
                     }
                 }
