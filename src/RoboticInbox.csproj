@@ -80,7 +80,9 @@
     <Compile Include="Utilities\ModLog.cs" />
     <Compile Include="Patches\NetPackageTELock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StorageManager.cs" />
+    <Compile Include="Utilities\StorageManager.cs" />
+    <Compile Include="Utilities\SignManager.cs" />
+    <Compile Include="Utilities\NotificationManager.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

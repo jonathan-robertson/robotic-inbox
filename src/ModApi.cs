@@ -22,7 +22,6 @@ namespace RoboticInbox
                 SettingsManager.Load();
                 ModEvents.GameStartDone.RegisterHandler(OnGameStartDone);
                 ModEvents.PlayerSpawnedInWorld.RegisterHandler(OnPlayerSpawnedInWorld);
-                ModEvents.GameShutdown.RegisterHandler(OnGameShutdown);
             }
             catch (Exception e)
             {
@@ -35,6 +34,7 @@ namespace RoboticInbox
             try
             {
                 StorageManager.OnGameStartDone();
+                SignManager.OnGameStartDone();
             }
             catch (Exception e)
             {
@@ -83,28 +83,6 @@ namespace RoboticInbox
             catch (Exception e)
             {
                 _log.Error("Failed to handle PlayerSpawnedInWorld event.", e);
-            }
-        }
-
-        private void OnGameShutdown()
-        {
-            try
-            {
-                if (StorageManager.ActiveCoroutines.Count == 0)
-                {
-                    _log.Info("No coroutines needed to be stopped for shutdown.");
-                    return;
-                }
-                _log.Info($"Stopping {StorageManager.ActiveCoroutines.Count} live coroutines for shutdown.");
-                foreach (var kvp in StorageManager.ActiveCoroutines)
-                {
-                    ThreadManager.StopCoroutine(kvp.Value);
-                }
-                _log.Info($"All coroutines stopped for shutdown.");
-            }
-            catch (Exception e)
-            {
-                _log.Error("OnGameShutdown Failed", e);
             }
         }
     }

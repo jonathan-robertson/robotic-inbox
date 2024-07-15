@@ -1,10 +1,9 @@
-﻿using RoboticInbox.Utilities;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RoboticInbox
+namespace RoboticInbox.Utilities
 {
     internal class StorageManager
     {
@@ -13,16 +12,12 @@ namespace RoboticInbox
         public const int Y_MIN = 0;
         public const int Y_MAX = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
 
-        private static readonly FastTags<TagGroup.Global> roboticinboxTag = FastTags<TagGroup.Global>.Parse("roboticinbox");
-        private static readonly FastTags<TagGroup.Global> roboticinboxinsecureTag = FastTags<TagGroup.Global>.Parse("roboticinboxinsecure");
+        private static FastTags<TagGroup.Global> RoboticinboxTag { get; } = FastTags<TagGroup.Global>.Parse("roboticinbox");
+        private static FastTags<TagGroup.Global> RoboticinboxinsecureTag { get; } = FastTags<TagGroup.Global>.Parse("roboticinboxinsecure");
+        private static List<int> InboxBlockIds { get; } = new List<int>();
+        private static List<int> InsecureInboxBlockIds { get; } = new List<int>();
+        private static int LandClaimRadius { get; set; }
 
-        public static string MessageTargetContainerInUse { get; private set; } = "Robotic Inbox was [ff8000]unable to organize this container[-] as it was in use.";
-        public static string SoundVehicleStorageOpen { get; private set; } = "vehicle_storage_open";
-        public static string SoundVehicleStorageClose { get; private set; } = "vehicle_storage_close";
-
-        public static List<int> InboxBlockIds { get; private set; } = new List<int>();
-        public static List<int> InsecureInboxBlockIds { get; private set; } = new List<int>();
-        public static int LandClaimRadius { get; private set; }
         public static Dictionary<Vector3i, Coroutine> ActiveCoroutines { get; private set; } = new Dictionary<Vector3i, Coroutine>();
 
         internal static void OnGameStartDone()
@@ -37,12 +32,12 @@ namespace RoboticInbox
             _log.Info("Attempting to register block IDs for Mod.");
             foreach (var kvp in Block.nameToBlock)
             {
-                if (kvp.Value.Tags.Test_AnySet(roboticinboxTag))
+                if (kvp.Value.Tags.Test_AnySet(RoboticinboxTag))
                 {
                     InboxBlockIds.Add(kvp.Value.blockID);
                     _log.Info($"{kvp.Value.blockName} (block id: {kvp.Value.blockID}) verified as a Robotic Inbox Block.");
                 }
-                else if (kvp.Value.Tags.Test_AnySet(roboticinboxinsecureTag))
+                else if (kvp.Value.Tags.Test_AnySet(RoboticinboxinsecureTag))
                 {
                     InsecureInboxBlockIds.Add(kvp.Value.blockID);
                     _log.Info($"{kvp.Value.blockName} (block id: {kvp.Value.blockID}) verified as an Insecure Robotic Inbox Block.");
@@ -54,10 +49,28 @@ namespace RoboticInbox
             _log.Info($"LandClaimRadius found to be {LandClaimRadius}m");
         }
 
+        internal static void OnGameManagerApplicationQuit()
+        {
+            if (ActiveCoroutines.Count > 0)
+            {
+                _log.Trace($"Stopping {ActiveCoroutines.Count} active coroutines for shutdown.");
+                foreach (var kvp in ActiveCoroutines)
+                {
+                    ThreadManager.StopCoroutine(kvp.Value);
+                }
+                _log.Trace($"All scanning coroutines stopped for shutdown.");
+            }
+            else
+            {
+                _log.Trace("No scanning coroutines needed to be stopped for shutdown.");
+            }
+        }
+
         internal static void Distribute(int clrIdx, Vector3i sourcePos)
         {
             _log.Debug($"Distribute called for tile entity at {sourcePos}");
-            var source = GameManager.Instance.World.GetTileEntity(clrIdx, sourcePos);
+            var world = GameManager.Instance.World;
+            var source = world.GetTileEntity(clrIdx, sourcePos);
             if (source == null || source.blockValue.Block == null)
             {
                 _log.Debug($"TileEntity not found at {sourcePos}");
@@ -81,7 +94,7 @@ namespace RoboticInbox
                 _log.Debug($"Min and Max ranges to scan for containers are equal, so there is no range to scan containers within.");
                 return;
             }
-            ActiveCoroutines.Add(sourcePos, ThreadManager.StartCoroutine(OrganizeCoroutine(clrIdx, sourcePos, source, sourceContainer, min, max)));
+            ActiveCoroutines.Add(sourcePos, ThreadManager.StartCoroutine(OrganizeCoroutine(world, clrIdx, sourcePos, source, sourceContainer, min, max)));
         }
 
         private static void GetBoundsWithinWorldAndLandClaim(Vector3i source, out Vector3i min, out Vector3i max)
@@ -135,7 +148,7 @@ namespace RoboticInbox
             return;
         }
 
-        internal static bool TryGetActiveLandClaimPosContaining(Vector3i sourcePos, out Vector3i lcbPos)
+        private static bool TryGetActiveLandClaimPosContaining(Vector3i sourcePos, out Vector3i lcbPos)
         {
             var _world = GameManager.Instance.World;
             foreach (var kvp in GameManager.Instance.persistentPlayers.Players)
@@ -160,12 +173,12 @@ namespace RoboticInbox
             return false;
         }
 
-        public static int FastMax(int v1, int v2, int v3)
+        private static int FastMax(int v1, int v2, int v3)
         {
             return Utils.FastMax(v1, Utils.FastMax(v2, v3));
         }
 
-        public static int FastMin(int v1, int v2, int v3)
+        private static int FastMin(int v1, int v2, int v3)
         {
             return Utils.FastMin(v1, Utils.FastMin(v2, v3));
         }
@@ -193,8 +206,7 @@ namespace RoboticInbox
                 && z <= max.z;
         }
 
-
-        private static IEnumerator OrganizeCoroutine(int clrIdx, Vector3i sourcePos, TileEntity source, ITileEntityLootable sourceContainer, Vector3i min, Vector3i max)
+        private static IEnumerator OrganizeCoroutine(World world, int clrIdx, Vector3i sourcePos, TileEntity source, ITileEntityLootable sourceContainer, Vector3i min, Vector3i max)
         {
             // NOTE: While the repitition is really gross, it does achieve O(n), vs a 'cleaner' set of loops that would be O(n^2)
             var maxDist = FindMaxDistance(sourcePos - min, max - sourcePos);
@@ -208,7 +220,7 @@ namespace RoboticInbox
                     {
                         for (var z = Utils.FastMax(sourcePos.z - distance, min.z); z <= Utils.FastMax(sourcePos.z + distance, max.z); z++)
                         {
-                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            if (VerifyContainer(world, clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
                                 Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
@@ -224,7 +236,7 @@ namespace RoboticInbox
                     {
                         for (var z = Utils.FastMax(sourcePos.z - distance, min.z); z <= Utils.FastMax(sourcePos.z + distance, max.z); z++)
                         {
-                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            if (VerifyContainer(world, clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
                                 Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
@@ -240,7 +252,7 @@ namespace RoboticInbox
                     {
                         for (var x = Utils.FastMax(sourcePos.x - distance, min.x); x <= Utils.FastMin(sourcePos.x + distance, max.x); x++)
                         {
-                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            if (VerifyContainer(world, clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
                                 Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
@@ -256,7 +268,7 @@ namespace RoboticInbox
                     {
                         for (var x = Utils.FastMax(sourcePos.x - distance, min.x); x <= Utils.FastMin(sourcePos.x + distance, max.x); x++)
                         {
-                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            if (VerifyContainer(world, clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
                                 Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
@@ -272,7 +284,7 @@ namespace RoboticInbox
                     {
                         for (var z = Utils.FastMax(sourcePos.z - distance + 1, min.z); z <= Utils.FastMin(sourcePos.z + distance - 1, max.z); z++)
                         {
-                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            if (VerifyContainer(world, clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
                                 Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
@@ -288,7 +300,7 @@ namespace RoboticInbox
                     {
                         for (var z = Utils.FastMax(sourcePos.z - distance + 1, min.z); z <= Utils.FastMin(sourcePos.z + distance - 1, max.z); z++)
                         {
-                            if (VerifyContainer(clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
+                            if (VerifyContainer(world, clrIdx, x, y, z, out var targetPos, out var target, out var targetContainer))
                             {
                                 yield return null; // free up frames just before each distribute
                                 Distribute(source, sourceContainer, sourcePos, target, targetContainer, targetPos);
@@ -301,17 +313,17 @@ namespace RoboticInbox
             _ = ActiveCoroutines.Remove(sourcePos);
         }
 
-        private static bool VerifyContainer(int clrIdx, int x, int y, int z, out Vector3i pos, out TileEntity entity, out ITileEntityLootable tileEntityLootContainer)
+        private static bool VerifyContainer(World world, int clrIdx, int x, int y, int z, out Vector3i pos, out TileEntity entity, out ITileEntityLootable tileEntityLootContainer)
         {
             pos = new Vector3i(x, y, z);
-            entity = GameManager.Instance.World.GetTileEntity(clrIdx, pos);
+            entity = world.GetTileEntity(clrIdx, pos);
             return TryCastAsContainer(entity, out tileEntityLootContainer)
                 && tileEntityLootContainer.bPlayerStorage
                 && !tileEntityLootContainer.bPlayerBackpack
                 && !IsRoboticInbox(entity.blockValue.Block.blockID);
         }
 
-        internal static bool IsRoboticInbox(int blockId)
+        private static bool IsRoboticInbox(int blockId)
         {
             return InboxBlockIds.Contains(blockId) || InsecureInboxBlockIds.Contains(blockId);
         }
@@ -322,23 +334,14 @@ namespace RoboticInbox
             if (entityIdInSourceContainer != -1)
             {
                 _log.Trace($"player {entityIdInSourceContainer} is currently accessing source container at {sourcePos}; skipping");
-                GameManager.Instance.PlaySoundAtPositionServer(sourcePos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
+                NotificationManager.PlaySoundVehicleStorageOpen(sourcePos);
                 return true;
             }
             var entityIdInTargetContainer = GameManager.Instance.GetEntityIDForLockedTileEntity(target);
             if (entityIdInTargetContainer != -1)
             {
                 _log.Trace($"player {entityIdInTargetContainer} is currently accessing target container at {targetPos}; skipping");
-                var clientInfo = ConnectionManager.Instance.Clients.ForEntityId(entityIdInTargetContainer);
-                if (clientInfo == null)
-                {
-                    GameManager.ShowTooltip(GameManager.Instance.World.GetPrimaryPlayer(), MessageTargetContainerInUse);
-                }
-                else
-                {
-                    clientInfo.SendPackage(NetPackageManager.GetPackage<NetPackageShowToolbeltMessage>().Setup(MessageTargetContainerInUse, SoundVehicleStorageOpen));
-                }
-                GameManager.Instance.PlaySoundAtPositionServer(targetPos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
+                NotificationManager.NotifyInUse(entityIdInTargetContainer, targetPos);
                 return true;
             }
             return false;
@@ -354,7 +357,7 @@ namespace RoboticInbox
 
             if (!CanAccess(source, target, targetPos))
             {
-                GameManager.Instance.PlaySoundAtPositionServer(targetPos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
+                NotificationManager.PlaySoundVehicleStorageOpen(targetPos);
                 return;
             }
 
@@ -413,7 +416,7 @@ namespace RoboticInbox
                 if (totalItemsTransferred > 0)
                 {
                     targetContainer.items = StackSortUtil.CombineAndSortStacks(targetContainer.items);
-                    HandleTransferred(targetPos, target, totalItemsTransferred);
+                    SignManager.HandleTransferred(targetPos, target, totalItemsTransferred);
                 }
             }
             catch (Exception e)
@@ -449,13 +452,13 @@ namespace RoboticInbox
 
             if (!targetLock.HasPassword())
             {
-                HandleTargetLockedWithoutPassword(targetPos, target);
+                SignManager.HandleTargetLockedWithoutPassword(targetPos, target);
                 return false;
             }
 
             if (!sourceIsLockable || !sourceLock.IsLocked())
             {
-                HandleTargetLockedWhileSourceIsNot(targetPos, target);
+                SignManager.HandleTargetLockedWhileSourceIsNot(targetPos, target);
                 return false;
             }
 
@@ -464,90 +467,8 @@ namespace RoboticInbox
                 return true;
             }
 
-            HandlePasswordMismatch(targetPos, target);
+            SignManager.HandlePasswordMismatch(targetPos, target);
             return false;
-        }
-
-        private static bool TryCastToITileEntitySignable(TileEntity tileEntity, out ITileEntitySignable signable)
-        {
-            switch (tileEntity)
-            {
-                case TileEntitySecureLootContainerSigned signedContainer:
-                    signable = signedContainer;
-                    return true;
-                case TileEntityComposite composite:
-                    signable = composite.GetFeature<TEFeatureSignable>();
-                    return true;
-            }
-            signable = null;
-            return false;
-        }
-
-        private static bool TryGetOwner(TileEntity target, out PlatformUserIdentifierAbs owner)
-        {
-            switch (target)
-            {
-                case TileEntityComposite composite:
-                    owner = composite.Owner;
-                    return true;
-                case TileEntitySecureLootContainerSigned tileEntitySecureLootContainerSigned:
-                    owner = tileEntitySecureLootContainerSigned.ownerID;
-                    return true;
-            }
-            owner = null;
-            return false;
-        }
-
-        private static void HandleTargetLockedWithoutPassword(Vector3i pos, TileEntity target)
-        {
-            if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
-            {
-                _ = ThreadManager.StartCoroutine(ShowTemporaryText(SettingsManager.DistributionBlockedNoticeTime, signable, owner, "Can't Distribute: Container Locked without password")); // TODO: test 2
-            }
-            GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
-        }
-
-        private static void HandleTargetLockedWhileSourceIsNot(Vector3i pos, TileEntity target)
-        {
-            if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
-            {
-                _ = ThreadManager.StartCoroutine(ShowTemporaryText(SettingsManager.DistributionBlockedNoticeTime, signable, owner, "Can't Distribute: Container Locked but Inbox is not"));
-            }
-            GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
-        }
-
-        private static void HandlePasswordMismatch(Vector3i pos, TileEntity target)
-        {
-            if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
-            {
-                _ = ThreadManager.StartCoroutine(ShowTemporaryText(SettingsManager.DistributionBlockedNoticeTime, signable, owner, "Can't Distribute: Password Does not match Inbox"));
-            }
-            GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageOpen, AudioRolloffMode.Logarithmic, 5);
-        }
-
-        private static void HandleTransferred(Vector3i pos, TileEntity target, int totalItemsTransferred)
-        {
-            if (TryCastToITileEntitySignable(target, out var signable) && TryGetOwner(target, out var owner))
-            {
-                _ = ThreadManager.StartCoroutine(ShowTemporaryText(SettingsManager.DistributionSuccessNoticeTime, signable, owner, $"Added + Sorted\n{totalItemsTransferred} Item{(totalItemsTransferred > 1 ? "s" : "")}"));
-            }
-            GameManager.Instance.PlaySoundAtPositionServer(pos, SoundVehicleStorageClose, AudioRolloffMode.Logarithmic, 5);
-        }
-
-        private static IEnumerator ShowTemporaryText(float seconds, ITileEntitySignable signableEntity, PlatformUserIdentifierAbs signingPlayer, string text)
-        {
-            if (signingPlayer == null)
-            {
-                _log.Trace("No Signing Player found; cannot update helper text on target container");
-                yield return null;
-            }
-
-            var originalText = signableEntity.GetAuthoredText().Text;
-            _log.Trace($"setting temporary text for {signableEntity.blockValue.Block.blockName} to:\n{text}");
-            signableEntity.SetText(text, true, signingPlayer); // update with new text (and sync to players)
-            yield return new WaitForSeconds(seconds);
-            _log.Trace($"returning original text for {signableEntity.blockValue.Block.blockName} to:\n{originalText}");
-            signableEntity?.SetText(originalText, true, signingPlayer); // sync original text to players
         }
 
         /* TODO: provide feedback with textures to non-writable storage

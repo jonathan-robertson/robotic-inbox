@@ -17,7 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] add support for local and p2p, if possible
   - [x] trigger distribution on p2p host
   - [x] trigger sign update on p2p host
-- [ ] fix but when opening inbox multiple times: surrounding containers forget original text
+- [x] fix bug: when opening inbox multiple times: surrounding containers forget original text
+- [x] fix bug: messages lost on shutdown
+- [x] centralize sign management
+  - [x] update away from spawning coroutines and favor a single, centrally-managed coroutine
+- [x] centralize notification/tooltip/sound management
 - [x] fix compilation errors
 - [x] fix recipe: value -> count in 1.0
 - [x] fix trader category -> match workbench
@@ -35,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)
 - [x] update references for 7dtd-1.0 b316
 - [x] update readme with screenshots
-- [x] update to prioritize scanning closes containers first
+- [x] update to prioritize scanning closest containers first
 
 ## [3.0.1] - 2023-11-21
 
