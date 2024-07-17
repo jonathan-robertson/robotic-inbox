@@ -8,7 +8,7 @@ namespace RoboticInbox.Utilities
     {
         public const int H_DIST_MIN = 0;
         public const int H_DIST_MAX = 128;
-        public const int V_DIST_MIN = 0;
+        public const int V_DIST_MIN = -1;
         public const int V_DIST_MAX = StorageManager.Y_MAX;
         public const float SUCCESS_NOTICE_TIME_MIN = 0.0f;
         public const float SUCCESS_NOTICE_TIME_MAX = 10.0f;
