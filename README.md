@@ -1,6 +1,6 @@
 # Robotic Inbox
 
-[![🧪 Tested On](https://img.shields.io/badge/🧪%20Tested%20On-1.0%20b316-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
+[![🧪 Tested On](https://img.shields.io/badge/🧪%20Tested%20On-1.0%20b317-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
 
 - [Robotic Inbox](#robotic-inbox)
   - [Summary](#summary)
@@ -77,8 +77,8 @@ Or if you break the lock on someone else's Robotic Inbox (such as a friend no lo
 
 You now have a slew of options you can use to fine-tune the experience for yourself and any other players who happen to join your game!
 
-Command | Default/Recommended Value | Constraints | Description | Impact
---- | :---: | --- | ---
+Command | Default | Constraints | Description | Impact
+--- | :---: | :---: | --- | :---:
 `help roboticinbox` | N/A | N/A | Receive help information about the set of commands this mod provides | N/A
 `ri horizontal-range <int>` | 5 | 0 to 128 | set how wide (x/z axes) the inbox should scan for storage containers | very high
 `ri vertical-range <int>` | 5 | -1 to 253 (-1 = bedrock-to-sky) | set how high/low (y axis) the inbox should scan for storage containers | high
