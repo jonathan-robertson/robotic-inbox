@@ -99,12 +99,11 @@
             <drop event="Destroy" name="resourceElectricParts" count="0,3" />
             <drop event="Fall" name="scrapMetalPile" count="1" prob="0.75" stick_chance="1" />
             <property class="RepairItems">
-                <property name="resourceForgedIron" value="2" />
-                <property name="resourceMechanicalParts" value="2" />
+                <property name="resourceScrapIron" value="20" />
             </property>
             <property class="UpgradeBlock"> <!-- repair busted lock! -->
                 <property name="ToBlock" value="cntRoboticInbox" />
-                <property name="Item" value="resourceElectricParts" />
+                <property name="Item" value="resourceForgedIron" />
                 <property name="ItemCount" value="2" />
                 <property name="UpgradeHitCount" value="4" />
             </property>
