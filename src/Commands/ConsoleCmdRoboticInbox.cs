@@ -131,6 +131,7 @@ namespace RoboticInbox
                         //        SdtdConsole.Instance.Output($"settings could not be saved to {SettingsManager.Filename} due to encountering an issue: {e.Message}");
                         //    }
                         //    return;
+                        case "debug":
                         case "dm":
                             ModApi.DebugMode = !ModApi.DebugMode;
                             SdtdConsole.Instance.Output($"debug logging mode has been {(ModApi.DebugMode ? "enabled" : "disabled")} for Robotic Inbox.");
