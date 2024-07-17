@@ -111,11 +111,11 @@ namespace RoboticInbox.Utilities
 
             if (OriginalMessages.TryAdd(pos, signableEntity.GetAuthoredText().Text))
             {
-                _log.Debug($"[{pos}] added message");
+                _log.Trace($"[{pos}] added message");
             }
             else
             {
-                _log.Debug($"[{pos}] extended with updated message");
+                _log.Trace($"[{pos}] extended with updated message");
             }
             _ = MessageExpirations.TryRemove(pos, out _);
             _ = MessageExpirations.TryAdd(pos, DateTime.Now.AddSeconds(seconds));

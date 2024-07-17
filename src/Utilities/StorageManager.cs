@@ -37,7 +37,7 @@ namespace RoboticInbox.Utilities
                     InboxBlockIds.Add(kvp.Value.blockID);
                     _log.Info($"{kvp.Value.blockName} (block id: {kvp.Value.blockID}) verified as a Robotic Inbox Block.");
                 }
-                else if (kvp.Value.Tags.Test_AnySet(RoboticinboxinsecureTag))
+                else if (HasRoboticInboxInsecureTag(kvp.Value))
                 {
                     InsecureInboxBlockIds.Add(kvp.Value.blockID);
                     _log.Info($"{kvp.Value.blockName} (block id: {kvp.Value.blockID}) verified as an Insecure Robotic Inbox Block.");
@@ -47,6 +47,16 @@ namespace RoboticInbox.Utilities
             var size = GameStats.GetInt(EnumGameStats.LandClaimSize);
             LandClaimRadius = (size % 2 == 1 ? size - 1 : size) / 2;
             _log.Info($"LandClaimRadius found to be {LandClaimRadius}m");
+        }
+
+        internal static bool HasRoboticInboxSecureTag(Block block)
+        {
+            return block.Tags.Test_AnySet(RoboticinboxTag);
+        }
+
+        internal static bool HasRoboticInboxInsecureTag(Block block)
+        {
+            return block.Tags.Test_AnySet(RoboticinboxinsecureTag);
         }
 
         internal static void OnGameManagerApplicationQuit()
@@ -66,32 +76,37 @@ namespace RoboticInbox.Utilities
             }
         }
 
+        internal static bool IsNotActiveRoboticInbox(ITileEntity tileEntity)
+        {
+            return !InboxBlockIds.Contains(tileEntity.blockValue.Block.blockID);
+        }
+
         internal static void Distribute(int clrIdx, Vector3i sourcePos)
         {
-            _log.Debug($"Distribute called for tile entity at {sourcePos}");
+            _log.Trace($"Distribute called for tile entity at {sourcePos}");
             var world = GameManager.Instance.World;
             var source = world.GetTileEntity(clrIdx, sourcePos);
             if (source == null || source.blockValue.Block == null)
             {
-                _log.Debug($"TileEntity not found at {sourcePos}");
+                _log.Trace($"TileEntity not found at {sourcePos}");
                 return;
             }
-            if (!InboxBlockIds.Contains(source.blockValue.Block.blockID))
+            if (IsNotActiveRoboticInbox(source))
             {
-                _log.Debug($"!InboxBlockIds.Contains(source.blockValue.Block.blockID) at {sourcePos} -- {InboxBlockIds} does not contain {source.blockValue.Block.blockID}");
+                _log.Trace($"!InboxBlockIds.Contains(source.blockValue.Block.blockID) at {sourcePos} -- InboxBlockIds does not contain {source.blockValue.Block.blockID}");
                 return; // only focus on robotic inbox blocks which are not broken
             }
-            _log.Debug($"TileEntity block id confirmed as a Robotic Inbox Block");
+            _log.Trace($"TileEntity block id confirmed as a Robotic Inbox Block");
             if (!TryCastAsContainer(source, out var sourceContainer))
             {
-                _log.Debug($"TileEntity at {sourcePos} could not be converted into a TileEntityLootContainer.");
+                _log.Trace($"TileEntity at {sourcePos} could not be converted into a TileEntityLootContainer.");
                 return;
             }
 
             GetBoundsWithinWorldAndLandClaim(sourcePos, out var min, out var max);
             if (min == max)
             {
-                _log.Debug($"Min and Max ranges to scan for containers are equal, so there is no range to scan containers within.");
+                _log.Trace($"Min and Max ranges to scan for containers are equal, so there is no range to scan containers within.");
                 return;
             }
             ActiveCoroutines.Add(sourcePos, ThreadManager.StartCoroutine(OrganizeCoroutine(world, clrIdx, sourcePos, source, sourceContainer, min, max)));
@@ -106,11 +121,11 @@ namespace RoboticInbox.Utilities
                 _log.Warn("World.GetWorldExtent failed when checking for limits; this is not expected and may indicate an error.");
                 return;
             }
-            _log.Debug($"minMapSize: {_minMapSize}, maxMapSize: {_maxMapSize}, actualMapSize: {_maxMapSize - _minMapSize}");
+            _log.Trace($"minMapSize: {_minMapSize}, maxMapSize: {_maxMapSize}, actualMapSize: {_maxMapSize - _minMapSize}");
 
             if (SettingsManager.BaseSiphoningProtection && TryGetActiveLandClaimPosContaining(source, out var lcbPos))
             {
-                _log.Debug($"Land Claim was found containing {source} (pos: {lcbPos}); clamping to world and land claim coordinates.");
+                _log.Trace($"Land Claim was found containing {source} (pos: {lcbPos}); clamping to world and land claim coordinates.");
                 min.x = FastMax(source.x - SettingsManager.InboxHorizontalRange, lcbPos.x - LandClaimRadius, _minMapSize.x);
                 max.x = FastMin(source.x + SettingsManager.InboxHorizontalRange, lcbPos.x + LandClaimRadius, _maxMapSize.x);
                 min.z = FastMax(source.z - SettingsManager.InboxHorizontalRange, lcbPos.z - LandClaimRadius, _minMapSize.z);
@@ -125,11 +140,11 @@ namespace RoboticInbox.Utilities
                     min.y = FastMax(source.y - SettingsManager.InboxVerticalRange, Y_MIN, _minMapSize.y);
                     max.y = FastMin(source.y + SettingsManager.InboxVerticalRange, Y_MAX, _maxMapSize.y);
                 }
-                _log.Debug($"clampedMin: {min}, clampedMax: {max}.");
+                _log.Trace($"clampedMin: {min}, clampedMax: {max}.");
                 return;
             }
 
-            _log.Debug($"Land Claim not found containing {source}; clamping to world coordinates only.");
+            _log.Trace($"Land Claim not found containing {source}; clamping to world coordinates only.");
             min.x = Utils.FastMax(source.x - SettingsManager.InboxHorizontalRange, _minMapSize.x);
             max.x = Utils.FastMin(source.x + SettingsManager.InboxHorizontalRange, _maxMapSize.x);
             min.z = Utils.FastMax(source.z - SettingsManager.InboxHorizontalRange, _minMapSize.z);
@@ -144,7 +159,7 @@ namespace RoboticInbox.Utilities
                 min.y = FastMax(source.y - SettingsManager.InboxVerticalRange, Y_MIN, _minMapSize.y);
                 max.y = FastMin(source.y + SettingsManager.InboxVerticalRange, Y_MAX, _maxMapSize.y);
             }
-            _log.Debug($"clampedMin: {min}, clampedMax: {max}.");
+            _log.Trace($"clampedMin: {min}, clampedMax: {max}.");
             return;
         }
 
@@ -208,7 +223,9 @@ namespace RoboticInbox.Utilities
 
         private static IEnumerator OrganizeCoroutine(World world, int clrIdx, Vector3i sourcePos, TileEntity source, ITileEntityLootable sourceContainer, Vector3i min, Vector3i max)
         {
+            MarkInUse(source, -1);
             // NOTE: While the repitition is really gross, it does achieve O(n), vs a 'cleaner' set of loops that would be O(n^2)
+            _log.Trace($"[{sourcePos}] starting organize coroutine");
             var maxDist = FindMaxDistance(sourcePos - min, max - sourcePos);
             for (var distance = 1; distance <= maxDist; distance++)
             {
@@ -310,17 +327,19 @@ namespace RoboticInbox.Utilities
                 }
                 yield return null; // free up frames just before distance grows
             }
+            _log.Trace($"[{sourcePos}] ending organize coroutine");
             _ = ActiveCoroutines.Remove(sourcePos);
+            MarkNotInUse(source);
         }
 
-        private static bool VerifyContainer(World world, int clrIdx, int x, int y, int z, out Vector3i pos, out TileEntity entity, out ITileEntityLootable tileEntityLootContainer)
+        private static bool VerifyContainer(World world, int clrIdx, int x, int y, int z, out Vector3i pos, out TileEntity tileEntity, out ITileEntityLootable tileEntityLootContainer)
         {
             pos = new Vector3i(x, y, z);
-            entity = world.GetTileEntity(clrIdx, pos);
-            return TryCastAsContainer(entity, out tileEntityLootContainer)
+            tileEntity = world.GetTileEntity(clrIdx, pos);
+            return TryCastAsContainer(tileEntity, out tileEntityLootContainer)
                 && tileEntityLootContainer.bPlayerStorage
                 && !tileEntityLootContainer.bPlayerBackpack
-                && !IsRoboticInbox(entity.blockValue.Block.blockID);
+                && !IsRoboticInbox(tileEntity.blockValue.Block.blockID);
         }
 
         private static bool IsRoboticInbox(int blockId)
@@ -550,16 +569,29 @@ namespace RoboticInbox.Utilities
                 || entity.GetTileEntityType() == TileEntityType.SecureLootSigned;
         }
 
-        // TODO: as a safety precaution, lock source and target when transferring items between the two of them
-        private static void MarkInUse(Vector3i blockPos, int lootEntityId, int entityIdThatOpenedIt)
+        private static void MarkInUse(ITileEntity tileEntity, int entityIdThatOpenedIt)
         {
-            //GameManager.Instance.TELockServer(GameManager.Instance.World.ChunkCache.ClusterIdx, blockPos, -1, -2);
+            if (!GameManager.Instance.lockedTileEntities.ContainsKey(tileEntity))
+            {
+                _log.Trace($"MarkInUse: marked tile entity confirmed as being in-use");
+                GameManager.Instance.lockedTileEntities.Add(tileEntity, entityIdThatOpenedIt);
+            }
+            else
+            {
+                _log.Trace($"MarkInUse: tile entity was already marked as being in-use");
+            }
         }
 
-        // TODO: after transfer, unlock source and target
-        private static void MarkNotInUse(Vector3i blockPos, int lootEntityId)
+        private static void MarkNotInUse(ITileEntity tileEntity)
         {
-            //GameManager.Instance.TEUnlockServer(GameManager.Instance.World.ChunkCache.ClusterIdx, blockPos, -1);
+            if (GameManager.Instance.lockedTileEntities.Remove(tileEntity))
+            {
+                _log.Trace($"MarkNotInUse: marked tileEntity as no longer being in use");
+            }
+            else
+            {
+                _log.Trace($"MarkNotInUse: tileEntity was not present in lockedTileEntities list");
+            }
         }
     }
 }
