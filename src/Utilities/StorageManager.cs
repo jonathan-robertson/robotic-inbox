@@ -12,10 +12,10 @@ namespace RoboticInbox.Utilities
         public const int Y_MIN = 0;
         public const int Y_MAX = 253; // Block.CanPlaceBlockAt treats 253 as maximum height
 
-        private static FastTags<TagGroup.Global> RoboticinboxTag { get; } = FastTags<TagGroup.Global>.Parse("roboticinbox");
-        private static FastTags<TagGroup.Global> RoboticinboxinsecureTag { get; } = FastTags<TagGroup.Global>.Parse("roboticinboxinsecure");
-        private static List<int> InboxBlockIds { get; } = new List<int>();
-        private static List<int> InsecureInboxBlockIds { get; } = new List<int>();
+        private static FastTags<TagGroup.Global> RoboticInboxTags { get; } = FastTags<TagGroup.Global>.Parse("roboticinbox,roboticinboxinsecure");
+        private static FastTags<TagGroup.Global> RoboticSecureInboxTag { get; } = FastTags<TagGroup.Global>.Parse("roboticinbox");
+        private static FastTags<TagGroup.Global> RoboticInsecureInboxTag { get; } = FastTags<TagGroup.Global>.Parse("roboticinboxinsecure");
+        private static FastTags<TagGroup.Global> RepairableLockTag { get; } = FastTags<TagGroup.Global>.Parse("repairablelock");
         private static int LandClaimRadius { get; set; }
 
         public static Dictionary<Vector3i, Coroutine> ActiveCoroutines { get; private set; } = new Dictionary<Vector3i, Coroutine>();
@@ -29,18 +29,21 @@ namespace RoboticInbox.Utilities
             }
             _log.Info("Mod recognizes you as the host, so it will begin managing containers.");
 
-            _log.Info("Attempting to register block IDs for Mod.");
+            _log.Info("Attempting to verify blocks for Robotic Inbox mod.");
             foreach (var kvp in Block.nameToBlock)
             {
-                if (kvp.Value.Tags.Test_AnySet(RoboticinboxTag))
+                if (kvp.Value.Tags.Test_AnySet(RoboticSecureInboxTag))
                 {
-                    InboxBlockIds.Add(kvp.Value.blockID);
                     _log.Info($"{kvp.Value.blockName} (block id: {kvp.Value.blockID}) verified as a Robotic Inbox Block.");
                 }
-                else if (HasRoboticInboxInsecureTag(kvp.Value))
+                if (HasRoboticInboxInsecureTag(kvp.Value))
                 {
-                    InsecureInboxBlockIds.Add(kvp.Value.blockID);
                     _log.Info($"{kvp.Value.blockName} (block id: {kvp.Value.blockID}) verified as an Insecure Robotic Inbox Block.");
+                }
+                if (HasRepairableLockTag(kvp.Value))
+                {
+                    // TODO: also verify it has an upgrade tag?
+                    _log.Info($"{kvp.Value.blockName} (block id: {kvp.Value.blockID}) verified as a Block with a Repairable Lock.");
                 }
             }
 
@@ -51,12 +54,17 @@ namespace RoboticInbox.Utilities
 
         internal static bool HasRoboticInboxSecureTag(Block block)
         {
-            return block.Tags.Test_AnySet(RoboticinboxTag);
+            return block.Tags.Test_AnySet(RoboticSecureInboxTag);
         }
 
         internal static bool HasRoboticInboxInsecureTag(Block block)
         {
-            return block.Tags.Test_AnySet(RoboticinboxinsecureTag);
+            return block.Tags.Test_AnySet(RoboticInsecureInboxTag);
+        }
+
+        internal static bool HasRepairableLockTag(Block block)
+        {
+            return block.Tags.Test_AnySet(RepairableLockTag);
         }
 
         internal static void OnGameManagerApplicationQuit()
@@ -76,11 +84,6 @@ namespace RoboticInbox.Utilities
             }
         }
 
-        internal static bool IsNotActiveRoboticInbox(ITileEntity tileEntity)
-        {
-            return !InboxBlockIds.Contains(tileEntity.blockValue.Block.blockID);
-        }
-
         internal static void Distribute(int clrIdx, Vector3i sourcePos)
         {
             _log.Trace($"Distribute called for tile entity at {sourcePos}");
@@ -91,7 +94,7 @@ namespace RoboticInbox.Utilities
                 _log.Trace($"TileEntity not found at {sourcePos}");
                 return;
             }
-            if (IsNotActiveRoboticInbox(source))
+            if (!HasRoboticInboxSecureTag(source.blockValue.Block))
             {
                 _log.Trace($"!InboxBlockIds.Contains(source.blockValue.Block.blockID) at {sourcePos} -- InboxBlockIds does not contain {source.blockValue.Block.blockID}");
                 return; // only focus on robotic inbox blocks which are not broken
@@ -339,12 +342,12 @@ namespace RoboticInbox.Utilities
             return TryCastAsContainer(tileEntity, out tileEntityLootContainer)
                 && tileEntityLootContainer.bPlayerStorage
                 && !tileEntityLootContainer.bPlayerBackpack
-                && !IsRoboticInbox(tileEntity.blockValue.Block.blockID);
+                && !IsRoboticInbox(tileEntity.blockValue.Block);
         }
 
-        private static bool IsRoboticInbox(int blockId)
+        private static bool IsRoboticInbox(Block block)
         {
-            return InboxBlockIds.Contains(blockId) || InsecureInboxBlockIds.Contains(blockId);
+            return block.Tags.Test_AnySet(RoboticInboxTags);
         }
 
         private static bool CheckAndHandleInUse(TileEntity source, Vector3i sourcePos, TileEntity target, Vector3i targetPos)

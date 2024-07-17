@@ -20,7 +20,10 @@ namespace RoboticInbox.Utilities
 
         internal static void OnGameManagerApplicationQuit()
         {
-            ThreadManager.StopCoroutine(_signManagerCoroutine);
+            if (_signManagerCoroutine != null)
+            {
+                ThreadManager.StopCoroutine(_signManagerCoroutine);
+            }
             RestoreAllMessagesBeforeShutdown(GameManager.Instance.World);
         }
 

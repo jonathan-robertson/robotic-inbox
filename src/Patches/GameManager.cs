@@ -63,7 +63,7 @@ namespace RoboticInbox.Patches
                 }
 
                 var tileEntity = __instance.m_World.GetTileEntity(_clrIdx, _blockPos);
-                if (tileEntity == null || StorageManager.IsNotActiveRoboticInbox(tileEntity))
+                if (tileEntity == null || !StorageManager.HasRoboticInboxSecureTag(tileEntity.blockValue.Block))
                 {
                     return true; // not what we're looking to monitor
                 }
@@ -127,7 +127,7 @@ namespace RoboticInbox.Patches
                         var tileEntity = __instance.m_World.GetTileEntity(blockChangeInfo.pos);
                         if (tileEntity != null
                             && tileEntity is TileEntityComposite composite
-                            && StorageManager.HasRoboticInboxInsecureTag(tileEntity.blockValue.Block))
+                            && StorageManager.HasRepairableLockTag(tileEntity.blockValue.Block))
                         {
                             // We can see that the block is being upgraded from insecure -> secure
                             // i.e. our lock is being repaired

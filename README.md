@@ -59,6 +59,8 @@ Press & hold `Action Key` to lock it or set a combination.
 
 If someone busts your lock, you can replace the lock simply by repairing it. This will go through the upgrade flow and should appear relatively seamless.
 
+Or if you break the lock on someone else's Robotic Inbox (such as a friend no longer logs in), breaking the lock and repairing it will allow you to take ownership of the Inbox and adjust its password, lock state, etc.
+
 > ⚠️ Robotic Inboxes with broken locks will not be able to distribute items again until they're repaired.
 
 ![robotic inbox being repaired](https://raw.githubusercontent.com/jonathan-robertson/robotic-inbox/media/robotic-inbox-repairable-lock.png)
@@ -84,6 +86,7 @@ Command | Default/Recommended Value | Constraints | Description | Impact
 `ri blocked-notice-time <float>` | 3.0 | 0.0 to 10.0 | set how long to leave distribution blocked notice on boxes | N/A
 `ri base-siphoning-protection <bool>` | True | True or False | whether inboxes within claimed land should prevent scanning outside the bounds of their lcb | N/A
 `ri dm` | False | True or False | toggle debug logging mode | medium
+`ri debug` | False | True or False | toggle debug logging mode (same as `dm`) | medium
 
 > - 📝 Settings like `horizontal-range` and `vertical-range` will actually update the block description for your players as well, so things remain clear and accurate. Changes made during runtime will even auto-update the block description for all online players, too!
 > - 💾 Except for `debug`, these settings are retained in a file on the host system:

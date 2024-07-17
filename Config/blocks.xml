@@ -114,7 +114,7 @@
             <property name="WaterFlow" value="permitted" />
             <property name="SortOrder1" value="U900" />
             <property name="SortOrder2" value="0001" />
-            <property name="Tags" value="roboticinboxinsecure" />
+            <property name="Tags" value="roboticinboxinsecure,repairablelock" />
         </block>
 
         <block name="cntRoboticInboxRed">

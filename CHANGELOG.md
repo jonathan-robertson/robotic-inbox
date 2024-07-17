@@ -7,40 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - TBD
 
-- [x] add new admin options
-  - [x] add ability to adjust how long sign notices appear
-  - [x] add feature for admins to modify area of effect
-    - [x] update `cntRoboticInboxDesc` to reference cvar
-- [x] add repairable locks that replace owner on repair
-  - [ ] update to use some more generic repairablelock tags instead of robotic inbox and move this functionality to a new mod
-- [x] add support for local and p2p, if possible
-  - [x] trigger distribution on p2p host
-  - [x] trigger sign update on p2p host
-- [x] fix bug: when opening inbox multiple times: surrounding containers forget original text
-- [x] fix bug: messages lost on shutdown
-- [x] centralize sign management
-  - [x] update away from spawning coroutines and favor a single, centrally-managed coroutine
-- [x] centralize notification/tooltip/sound management
-- [x] fix compilation errors
-- [x] fix recipe: value -> count in 1.0
-- [x] fix trader category -> match workbench
-- [x] prevent inbox from being opened during a scan
-- [x] remove journal tips (discontinued in 1.0)
-- [x] rename inbox blocks to follow new naming standards
-- [ ] test mechanics online
-  - [ ] test lock repair while a large scan is happening... see if it breaks things
-  - [ ] other player in a target
-  - [ ] other player's placed container is distributable if rules are met
-  - [ ] side-by-side LCBs are (expected to not be) transferrable (even) if owned by same player
-- [x] update model to washing machine
-  - [x] add multiple color options
-  - [x] add tag to colors and scan for block tags
-- [x] update recipe: reduce forged iron, add pipe
-- [x] update references to storage; this has updated to something new
-- [x] verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)
-- [x] update references for 7dtd-1.0 b316
-- [x] update readme with screenshots
-- [x] update to prioritize scanning closest containers first
+- add new admin options
+  - add ability to adjust how long sign notices appear
+  - add feature for admins to modify area of effect
+    - update `cntRoboticInboxDesc` to reference cvar
+- add repairable locks that replace owner on repair
+- add support for local and p2p, if possible
+  - trigger distribution on p2p host
+  - trigger sign update on p2p host
+- fix bug: when opening inbox multiple times: surrounding containers forget original text
+- fix bug: messages lost on shutdown
+- centralize sign management
+  - update away from spawning coroutines and favor a single, centrally-managed coroutine
+- centralize notification/tooltip/sound management
+- fix compilation errors
+- fix recipe: value -> count in 1.0
+- fix trader category -> match workbench
+- prevent inbox from being opened during a scan
+- remove journal tips (discontinued in 1.0)
+- rename inbox blocks to follow new naming standards
+- update model to washing machine
+  - add multiple color options
+  - add tag to colors and scan for block tags
+- update recipe: reduce forged iron, add pipe
+- update references to storage; this has updated to something new
+- verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)
+- update references for 7dtd-1.0 b317
+- update readme with screenshots
+- update to prioritize scanning closest containers first
 
 ## [3.0.1] - 2023-11-21
 
