@@ -34,17 +34,23 @@ namespace RoboticInbox.Utilities
             //    - [recommended: true]
             return $@"
 === Current Settings for Robotic Inbox
-=== These settings are retained in a file on the host system: {Filename}
-Distribution Scanning Range: these values have an impact on server/host performance; extremely high values may cause lag for all players
-- horizontal-range: {InboxHorizontalRange} [recommended: 5; must be: >= {H_DIST_MIN} & <= {H_DIST_MAX}; impact: very high]
-- vertical-range: {InboxVerticalRange} [recommended: 5; must be: >= {V_DIST_MIN} & <= {V_DIST_MAX}; -1 = bedrock-to-sky; impact: high]
-Notices: keeping these as low as possible is best because a server restart while displaying a message forgets the original
-- success-notice-time: {DistributionSuccessNoticeTime:0.0} [recommended: 2.0; must be >= {SUCCESS_NOTICE_TIME_MIN} & <= {SUCCESS_NOTICE_TIME_MAX}; disable with 0.0]
-- blocked-notice-time: {DistributionBlockedNoticeTime:0.0} [recommended: 3.0; must be >= {BLOCKED_NOTICE_TIME_MIN} & <= {BLOCKED_NOTICE_TIME_MAX}; disable with 0.0]
-Security: these options are meant to protect the players from fishing or siphoning, but might not be preferred by everyone
-- base-siphoning-protection: {BaseSiphoningProtection} [recommended: True]
-Temporary Values: server starts with this in a default state and does not save them to the settings file
-- debug mode: {(ModApi.DebugMode ? "enabled" : "disabled")} [recommended: False - enabling this adds a lot of overhead and should only be running for debugging purposes]";
+- horizontal-range: {InboxHorizontalRange}
+  - [recommended: 5 | must be: >= {H_DIST_MIN} & <= {H_DIST_MAX} | impact: very high]
+- vertical-range: {InboxVerticalRange}
+  - [recommended: 5 | must be: >= {V_DIST_MIN} & <= {V_DIST_MAX} | -1 = bedrock-to-sky | impact: high]
+- success-notice-time: {DistributionSuccessNoticeTime:0.0}
+  - [recommended: 2.0 | must be >= {SUCCESS_NOTICE_TIME_MIN} & <= {SUCCESS_NOTICE_TIME_MAX} | disable with 0.0]
+- blocked-notice-time: {DistributionBlockedNoticeTime:0.0}
+  - [recommended: 3.0 | must be >= {BLOCKED_NOTICE_TIME_MIN} & <= {BLOCKED_NOTICE_TIME_MAX} | disable with 0.0]
+- base-siphoning-protection: {BaseSiphoningProtection}
+  - [recommended: True]
+  - if placed within an LCB, the inbox will not distribute to containers outside of that same LCB
+  - this option helps to protect players from unintentionally dumping items in nearby raider chests placed just outside of their bases
+- debug mode: {ModApi.DebugMode}
+  - [recommended: False]
+  - enabling this adds a lot of overhead and should only be running for debugging purposes
+  - server starts with this in the False state
+=== Settings Stored In: {Filename}";
         }
 
         internal static void Load()
@@ -52,14 +58,9 @@ Temporary Values: server starts with this in a default state and does not save t
             CreatePathIfMissing();
             try
             {
-                var input = File.ReadAllText(Filename);
-                if (input != null)
-                {
-                    Settings = Json<ModSettings>.Deserialize(input);
-                    _log.Info($"Successfully loaded settings for Robotic Inbox mod; filename: {Filename}.");
-                    _log.Info(AsString());
-                }
-                _log.Warn($"Unable to load settings for Robotic Inbox mod; falling back to default values; filename: {Filename}");
+                Settings = Json<ModSettings>.Deserialize(File.ReadAllText(Filename));
+                _log.Info($"Successfully loaded settings for Robotic Inbox mod; filename: {Filename}.");
+                _log.Info(AsString());
             }
             catch (FileNotFoundException)
             {
