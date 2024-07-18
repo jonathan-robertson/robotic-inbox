@@ -38,7 +38,7 @@ A special container that automatically sorts and distributes items to other near
 ### Automatic Item Distribution and Organization
 
 This container will automatically distribute resources placed within it if they are present in other nearby containers.
-Resources can be distributed to any container `within 5 meters` (horizontally/vertically), so long as the following conditions are met:
+Resources can be distributed to any container `within 5 meters by default` (horizontally and vertically), so long as the following conditions are met:
 
 1. If inbox is locked, target must be locked, and share same password.
 2. If inbox is unlocked, target must also be unlocked.
