@@ -1,0 +1,8 @@
+<config>
+    <append xpath="/lootcontainers">
+        <!-- PLAYER cntRoboticInbox-->
+        <lootcontainer name="playerRoboticInbox" count="0" size="6,8" sound_open="UseActions/crate_iron_open" sound_close="UseActions/crate_iron_close" loot_quality_template="qualBaseTemplate">
+            <item name="cobweb" count="0" />
+        </lootcontainer>
+    </append>
+</config>

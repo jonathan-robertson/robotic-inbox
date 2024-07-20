@@ -1,7 +1,8 @@
 <config>
     <append xpath="/recipes">
-        <recipe name="cntSecureRoboticInbox" count="1" craft_area="workbench" tags="learnable,workbenchCrafting">
-            <ingredient name="resourceForgedIron" count="12" />
+        <recipe name="cntRoboticInboxVariantHelper" count="1" craft_area="workbench" tags="learnable,workbenchCrafting">
+            <ingredient name="resourceForgedIron" count="4" />
+            <ingredient name="resourceMetalPipe" count="3" />
             <ingredient name="resourceMechanicalParts" count="6" />
             <ingredient name="resourceElectricParts" count="8" />
         </recipe>
