@@ -5,15 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## TODO
-
-- [ ] test mechanics online
-  - [ ] test lock repair while a large scan is happening... see if it breaks things
-  - [ ] other player in a target
-  - [ ] other player's placed container is distributable if rules are met
-  - [ ] side-by-side LCBs are (expected to not be) transferrable (even) if owned by same player
-
-## [4.0.0] - TBD
+## [4.0.0] - 2024-07-20
 
 - add new admin options
   - add ability to adjust how long sign notices appear
@@ -40,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update recipe: reduce forged iron, add pipe
 - update references to storage; this has updated to something new
 - verify if any 'player-placed containers' are non-writable and consider removing it (there are some left!)
-- update references for 7dtd-1.0 b317
+- update references for 7dtd-1.0-b326
 - update readme with screenshots
 - update to prioritize scanning closest containers first
 
