@@ -1,27 +1,6 @@
 # Robotic Inbox
 
-[![🧪 Tested On 7DTD 1.1 (b14)](https://img.shields.io/badge/🧪%20Tested%20On-7DTD%201.1%20(b14)-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
-
-- [Robotic Inbox](#robotic-inbox)
-  - [Summary](#summary)
-    - [Support](#support)
-  - [Features](#features)
-    - [Automatic Item Distribution and Organization](#automatic-item-distribution-and-organization)
-    - [Dynamic Hints](#dynamic-hints)
-    - [Repairable Locks (new to v4)](#repairable-locks-new-to-v4)
-    - [Multiple Colors (new to v4)](#multiple-colors-new-to-v4)
-    - [Configuration Options (new to v4)](#configuration-options-new-to-v4)
-  - [Info](#info)
-    - [What Happens to Leftovers?](#what-happens-to-leftovers)
-    - [How Would I Acquire a Robotic Inbox In-Game?](#how-would-i-acquire-a-robotic-inbox-in-game)
-    - [For Hosts/Admins: Performance Considerations](#for-hostsadmins-performance-considerations)
-  - [Setup](#setup)
-    - [Environment / EAC / Hosting Requirements](#environment--eac--hosting-requirements)
-    - [Map Considerations for Installation or Uninstallation](#map-considerations-for-installation-or-uninstallation)
-    - [Windows PC (Single Player or Hosting P2P)](#windows-pc-single-player-or-hosting-p2p)
-      - [Critical Reminders](#critical-reminders)
-    - [Windows/Linux Installation (Server via FTP from Windows PC)](#windowslinux-installation-server-via-ftp-from-windows-pc)
-    - [Linux Server Installation (Server via SSH)](#linux-server-installation-server-via-ssh)
+[![🧪 Tested On 7DTD 1.2 (b27)](https://img.shields.io/badge/🧪%20Tested%20On-7DTD%201.2%20(b27)-blue.svg)](https://7daystodie.com/) [![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
 
 ## Summary
 
@@ -77,16 +56,16 @@ Or if you break the lock on someone else's Robotic Inbox (such as a friend no lo
 
 You now have a slew of options you can use to fine-tune the experience for yourself and any other players who happen to join your game!
 
-Command | Default | Constraints | Description | Impact
---- | :---: | :---: | --- | :---:
-`help roboticinbox` | N/A | N/A | Receive help information about the set of commands this mod provides | N/A
-`ri horizontal-range <int>` | 5 | 0 to 128 | set how wide (x/z axes) the inbox should scan for storage containers | very high
-`ri vertical-range <int>` | 5 | -1 to 253 (-1 = bedrock-to-sky) | set how high/low (y axis) the inbox should scan for storage containers | high
-`ri success-notice-time <float>` | 2.0 | 0.0 to 10.0 | set how long to leave distribution success notice on boxes | N/A
-`ri blocked-notice-time <float>` | 3.0 | 0.0 to 10.0 | set how long to leave distribution blocked notice on boxes | N/A
-`ri base-siphoning-protection <bool>` | True | True or False | whether inboxes within claimed land should prevent scanning outside the bounds of their lcb | N/A
-`ri dm` | False | True or False | toggle debug logging mode | medium
-`ri debug` | False | True or False | toggle debug logging mode (same as `dm`) | medium
+| Command                               | Default |           Constraints           | Description                                                                                 |  Impact   |
+| ------------------------------------- | :-----: | :-----------------------------: | ------------------------------------------------------------------------------------------- | :-------: |
+| `help roboticinbox`                   |   N/A   |               N/A               | Receive help information about the set of commands this mod provides                        |    N/A    |
+| `ri horizontal-range <int>`           |    5    |            0 to 128             | set how wide (x/z axes) the inbox should scan for storage containers                        | very high |
+| `ri vertical-range <int>`             |    5    | -1 to 253 (-1 = bedrock-to-sky) | set how high/low (y axis) the inbox should scan for storage containers                      |   high    |
+| `ri success-notice-time <float>`      |   2.0   |           0.0 to 10.0           | set how long to leave distribution success notice on boxes                                  |    N/A    |
+| `ri blocked-notice-time <float>`      |   3.0   |           0.0 to 10.0           | set how long to leave distribution blocked notice on boxes                                  |    N/A    |
+| `ri base-siphoning-protection <bool>` |  True   |          True or False          | whether inboxes within claimed land should prevent scanning outside the bounds of their lcb |    N/A    |
+| `ri dm`                               |  False  |          True or False          | toggle debug logging mode                                                                   |  medium   |
+| `ri debug`                            |  False  |          True or False          | toggle debug logging mode (same as `dm`)                                                    |  medium   |
 
 > - 📝 Settings like `horizontal-range` and `vertical-range` will actually update the block description for your players as well, so things remain clear and accurate. Changes made during runtime will even auto-update the block description for all online players, too!
 > - 💾 Except for `debug`, these settings are retained in a file on the host system:
@@ -105,12 +84,12 @@ Command | Default | Constraints | Description | Impact
 
 🛠️ Robotic Inboxes can also be crafted at the Workbench after reading enough about robotics to also craft a Tier 1 Junk Sledge.
 
-Ingredient | Count
---- | :---:
-resourceForgedIron | 4
-resourceMetalPipe | 3
-resourceMechanicalParts | 6
-resourceElectricParts | 8
+| Ingredient              | Count |
+| ----------------------- | :---: |
+| resourceForgedIron      |   4   |
+| resourceMetalPipe       |   3   |
+| resourceMechanicalParts |   6   |
+| resourceElectricParts   |   8   |
 
 ### For Hosts/Admins: Performance Considerations
 
@@ -131,11 +110,11 @@ If you have trouble getting things working, you can reach out to me for support 
 
 ### Environment / EAC / Hosting Requirements
 
-Environment | Compatible | Does EAC Need to be Disabled? | Who needs to install?
---- | --- | --- | ---
-Dedicated Server | Yes | no | only server
-Peer-to-Peer Hosting | Yes | only on the host | only the host
-Single Player Game | Yes | Yes | self (of course)
+| Environment          | Compatible | Does EAC Need to be Disabled? | Who needs to install? |
+| -------------------- | ---------- | ----------------------------- | --------------------- |
+| Dedicated Server     | Yes        | no                            | only server           |
+| Peer-to-Peer Hosting | Yes        | only on the host              | only the host         |
+| Single Player Game   | Yes        | Yes                           | self (of course)      |
 
 > 🤔 If you aren't sure what some of this means, details steps are provided below to walk you through the setup process.
 
