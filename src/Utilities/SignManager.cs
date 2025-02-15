@@ -82,7 +82,7 @@ namespace RoboticInbox.Utilities
                     return true;
                 case TileEntityComposite composite:
                     signable = composite.GetFeature<TEFeatureSignable>();
-                    return true;
+                    return signable != null;
             }
             signable = null;
             return false;

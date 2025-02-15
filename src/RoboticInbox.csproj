@@ -86,6 +86,8 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent />
+    <PostBuildEvent>SET ConfigurationName=$(ConfigurationName)
+SET SolutionName=$(SolutionName)
+call copy-on-build.cmd</PostBuildEvent>
   </PropertyGroup>
 </Project>
