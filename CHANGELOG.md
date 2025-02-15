@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [6.0.0] - 2025-02-15
 
+- fix null reference exception
 - update references for 7DTD 1.3 (b9)
 
 ## [5.0.0] - 2024-12-11
