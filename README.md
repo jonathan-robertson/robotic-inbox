@@ -1,9 +1,32 @@
 # Robotic Inbox
 
-[![🧪 Tested with 7DTD 1.3 (b9)](https://img.shields.io/badge/🧪%20Tested%20with-7DTD%201.3%20(b9)-blue.svg)](https://7daystodie.com/)
+[![🚀 Automatic Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/automatic-release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/automatic-release.yml)
 [![✅ Dedicated Servers Supported ServerSide](https://img.shields.io/badge/✅%20Dedicated%20Servers-Supported%20Serverside-blue.svg)](https://7daystodie.com/)
 [![✅ Single Player and P2P Supported](https://img.shields.io/badge/✅%20Single%20Player%20and%20P2P-Supported-blue.svg)](https://7daystodie.com/)
-[![📦 Automated Release](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml/badge.svg)](https://github.com/jonathan-robertson/robotic-inbox/actions/workflows/release.yml)
+
+<details><summary>Table of Contents</summary>
+
+- [Summary](#summary)
+  - [Support](#support)
+- [Features](#features)
+  - [Automatic Item Distribution and Organization](#automatic-item-distribution-and-organization)
+  - [Dynamic Hints](#dynamic-hints)
+  - [Repairable Locks (new to v4)](#repairable-locks-new-to-v4)
+  - [Multiple Colors (new to v4)](#multiple-colors-new-to-v4)
+  - [Configuration Options (new to v4)](#configuration-options-new-to-v4)
+- [Info](#info)
+  - [What Happens to Leftovers?](#what-happens-to-leftovers)
+  - [How Would I Acquire a Robotic Inbox In-Game?](#how-would-i-acquire-a-robotic-inbox-in-game)
+  - [For Hosts/Admins: Performance Considerations](#for-hostsadmins-performance-considerations)
+- [Setup](#setup)
+  - [Environment / EAC / Hosting Requirements](#environment--eac--hosting-requirements)
+  - [Map Considerations for Installation or Uninstallation](#map-considerations-for-installation-or-uninstallation)
+  - [Windows PC (Single Player or Hosting P2P)](#windows-pc-single-player-or-hosting-p2p)
+    - [Critical Reminders](#critical-reminders)
+  - [Windows/Linux Installation (Server via FTP from Windows PC)](#windowslinux-installation-server-via-ftp-from-windows-pc)
+  - [Linux Server Installation (Server via SSH)](#linux-server-installation-server-via-ssh)
+
+</details>
 
 ## Summary
 

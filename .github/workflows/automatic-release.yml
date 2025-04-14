@@ -1,0 +1,120 @@
+name: 🚀 Automatic Release
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+env:
+  SUPPORTED_SERVER_VERSIONS: "1.4-b8 1.3-b9" # space-delimited
+  SUBFOLDER: ${{ github.event.repository.name }}
+  PROJECT_FOLDER: src
+
+jobs:
+  release:
+    if: ${{ github.event.pull_request.merged }}
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: 🚚 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔍 Inspect contents
+        run: |
+          version=$(sed -n '/Version/{s/.*<Version value=\"\(.*\)\"[ ]*\/>.*/\1/;p}' ModInfo.xml)
+          if gh release view "$version" > /dev/null 2>&1; then
+            echo "Release $version already exists; please update ModInfo.xml and create another pull request"
+            exit 1
+          fi
+          echo "MOD_VERSION=$version" >> $GITHUB_ENV
+
+          prerelease=$([[ $version = 0* ]] && echo "true" || echo "false")
+          echo "PRERELEASE=$prerelease" >> $GITHUB_ENV
+          
+          csproj_path=$(sed -n 's/.*"[^"]*\\\([^"]*\.csproj\)".*/\1/p' ${{ github.event.repository.name }}.sln)
+          echo "CSPROJ_NAME=$csproj_path" >> $GITHUB_ENV
+                     
+          dll_name=$(sed -n '/AssemblyName/{s/.*<AssemblyName>\(.*\)<\/AssemblyName>.*/\1/;p}' ${{ env.PROJECT_FOLDER }}/$csproj_path)
+          echo "DLL_NAME=$dll_name" >> $GITHUB_ENV
+
+      - name: 🚛 Checkout 7dtd-references
+        uses: actions/checkout@v4
+        with:
+          repository: "${{ github.repository_owner }}/7dtd-references"
+          token: "${{ secrets.REFERENCES_TOKEN }}"
+          path: "7dtd-references"
+
+      - name: 🧐 Install mono
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mono-complete
+
+      - name: 🛻 Restore NuGet packages
+        run: |
+          nuget restore ${{ github.event.repository.name }}.sln
+
+      - name: 📦 Build and package artifacts
+        run: |
+          cp ${{ env.PROJECT_FOLDER }}/ModApi.cs ${{ env.PROJECT_FOLDER }}/ModApi.cs.bak
+          for GAME_VERSION in ${{ env.SUPPORTED_SERVER_VERSIONS }}; do
+            echo "building and packing mod for 7DTD version $GAME_VERSION"
+
+            # update release and target versions
+            cp ${{ env.PROJECT_FOLDER }}/ModApi.cs.bak ${{ env.PROJECT_FOLDER }}/ModApi.cs
+            sed -i "s|DLL_VERSION = \".*\"|DLL_VERSION = \"${{ env.MOD_VERSION }}\"|g" ${{ env.PROJECT_FOLDER }}/ModApi.cs
+            sed -i "s|BUILD_TARGET = \".*\"|BUILD_TARGET = \"$GAME_VERSION\"|g" ${{ env.PROJECT_FOLDER }}/ModApi.cs
+
+            # get current year
+            current_year=$(date +%Y)
+
+            # update license year, get copyright line
+            sed -i "s|Copyright (c) [0-9]\{4\}|Copyright (c) $current_year|g" LICENSE
+            copyright=$(sed -n '/Copyright (c) .*/p' LICENSE)
+
+            # update assembly info
+            sed -i "s|AssemblyCopyright(\".*\")|AssemblyCopyright(\"$copyright\")|g" ${{ env.PROJECT_FOLDER }}/Properties/AssemblyInfo.cs
+            sed -i "s|Version(\".*\")|Version(\"${{ env.MOD_VERSION }}\")|g" ${{ env.PROJECT_FOLDER }}/Properties/AssemblyInfo.cs
+
+            # update reference paths
+            sed -i "s|<HintPath>..\\\\..\\\\..\\\\..\\\\..\\\\..\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\7 Days to Die Dedicated Server|<HintPath>..\\\\7dtd-references\\\\${GAME_VERSION}|g" ${{ env.PROJECT_FOLDER }}/${{ env.CSPROJ_NAME }}
+
+            # print new reference paths
+            echo "${{ env.PROJECT_FOLDER }}/${{ env.CSPROJ_NAME }} references were modified to the following:"
+            cat "${{ env.PROJECT_FOLDER }}/${{ env.CSPROJ_NAME }}"
+
+            msbuild ${{ github.event.repository.name }}.sln /p:Configuration=Release
+            if [ $? -ne 0 ]; then
+              echo "build for $GAME_VERSION failed and will be skipped"
+              continue
+            else
+              echo "build for $GAME_VERSION was successful"
+            fi
+
+            mkdir "${{ env.SUBFOLDER }}"
+            cp -r Config "${{ env.SUBFOLDER }}/"
+            cp ModInfo.xml "${{ env.SUBFOLDER }}/"
+            cp README.md "${{ env.SUBFOLDER }}/"
+            cp CHANGELOG.md "${{ env.SUBFOLDER }}/"
+            cp "${{ env.DLL_NAME }}.dll" "${{ env.SUBFOLDER }}/"
+            zip -r "${{ github.event.repository.name }}-${{ env.MOD_VERSION }}-7dtd-$GAME_VERSION.zip" "${{ env.SUBFOLDER }}"
+            rm -rf "${{ env.SUBFOLDER }}"
+          done
+          if ! ls *.zip > /dev/null 2>&1; then
+            echo "could not successfully build for any of the supported versions of 7 days to die"
+            exit 1
+          fi
+
+      - name: 📰 Post new release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.MOD_VERSION }}
+          commit: main
+          name: ${{ github.event.pull_request.title }}
+          body: ${{ github.event.pull_request.body }}
+          generateReleaseNotes: true
+          artifacts: "*.zip"
+          prerelease: ${{ env.PRERELEASE }}
+          # if you'd like to review the generated release before publishing it, enable draft mode
+          # draft: true

@@ -7,8 +7,10 @@ namespace RoboticInbox
 {
     public class ModApi : IModApi
     {
-        private const string ModMaintainer = "kanaverum";
-        private const string SupportLink = "https://discord.gg/hYa2sNHXya";
+        private const string MOD_MAINTAINER = "kanaverum";
+        private const string SUPPORT_LINK = "https://discord.gg/hYa2sNHXya";
+        private const string DLL_VERSION = "dev-dll-version";
+        private const string BUILD_TARGET = "dev-build-target";
 
         private static readonly ModLog<ModApi> _log = new ModLog<ModApi>();
 
@@ -18,6 +20,7 @@ namespace RoboticInbox
         {
             try
             {
+                _log.Info($"Robotic Inbox DLL Version {DLL_VERSION} build for 7DTD {BUILD_TARGET}");
                 new Harmony(GetType().ToString()).PatchAll(Assembly.GetExecutingAssembly());
                 SettingsManager.Load();
                 ModEvents.GameStartDone.RegisterHandler(OnGameStartDone);
@@ -25,7 +28,7 @@ namespace RoboticInbox
             }
             catch (Exception e)
             {
-                _log.Error($"Failed to start up Robotic Inbox mod; take a look at logs for guidance but feel free to also reach out to the mod maintainer {ModMaintainer} via {SupportLink}", e);
+                _log.Error($"Failed to start up Robotic Inbox mod; take a look at logs for guidance but feel free to also reach out to the mod maintainer {MOD_MAINTAINER} via {SUPPORT_LINK}", e);
             }
         }
 
