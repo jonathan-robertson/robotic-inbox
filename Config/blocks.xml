@@ -27,7 +27,7 @@
 
             <!-- placement -->
             <property name="Place" value="TowardsPlacerInverted" />
-            <property name="AllowedRotations" value="Basic90" />
+            <property name="AllowedRotations" value="All" />
 
             <!-- trade -->
             <property name="SellableToTrader" value="false" />
@@ -57,7 +57,7 @@
             <property name="Tags" value="timecharge,roboticinbox" />
         </block>
         <block name="cntRoboticInboxInsecure">
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="Class" value="CompositeTileEntity" />
             <property class="CompositeFeatures">
                 <property class="TEFeatureStorage">
@@ -119,7 +119,7 @@
 
         <block name="cntRoboticInboxRed">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="ff0000" />
             <property name="TintColor" value="ff0000" />
@@ -128,7 +128,7 @@
         </block>
         <block name="cntRoboticInboxOrange">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="ff8000" />
             <property name="TintColor" value="ff8000" />
@@ -137,7 +137,7 @@
         </block>
         <block name="cntRoboticInboxYellow">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="ffe135" />
             <property name="TintColor" value="ffe135" />
@@ -146,7 +146,7 @@
         </block>
         <block name="cntRoboticInboxGreen">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="00ff80" />
             <property name="TintColor" value="00ff80" />
@@ -155,7 +155,7 @@
         </block>
         <block name="cntRoboticInboxPink">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="7B5F72" />
             <property name="TintColor" value="7B5F72" />
@@ -164,7 +164,7 @@
         </block>
         <block name="cntRoboticInboxPurple">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="8000ff" />
             <property name="TintColor" value="8000ff" />
@@ -173,7 +173,7 @@
         </block>
         <block name="cntRoboticInboxGrey">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="414141" />
             <property name="TintColor" value="414141" />
@@ -182,7 +182,7 @@
         </block>
         <block name="cntRoboticInboxWhite">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="8C8C8C" />
             <property name="TintColor" value="8C8C8C" />
@@ -191,7 +191,7 @@
         </block>
         <block name="cntRoboticInboxArmyGreen">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="454B1B" />
             <property name="TintColor" value="454B1B" />
@@ -200,7 +200,7 @@
         </block>
         <block name="cntRoboticInboxCobalt">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="0047ab" />
             <property name="TintColor" value="0047ab" />
@@ -210,7 +210,7 @@
 
         <block name="cntRoboticInboxInsecureRed">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="ff0000" />
             <property name="TintColor" value="ff0000" />
@@ -221,7 +221,7 @@
         </block>
         <block name="cntRoboticInboxInsecureOrange">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="ff8000" />
             <property name="TintColor" value="ff8000" />
@@ -232,7 +232,7 @@
         </block>
         <block name="cntRoboticInboxInsecureYellow">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="ffe135" />
             <property name="TintColor" value="ffe135" />
@@ -243,7 +243,7 @@
         </block>
         <block name="cntRoboticInboxInsecureGreen">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="00ff80" />
             <property name="TintColor" value="00ff80" />
@@ -254,7 +254,7 @@
         </block>
         <block name="cntRoboticInboxInsecurePink">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="7B5F72" />
             <property name="TintColor" value="7B5F72" />
@@ -265,7 +265,7 @@
         </block>
         <block name="cntRoboticInboxInsecurePurple">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="8000ff" />
             <property name="TintColor" value="8000ff" />
@@ -276,7 +276,7 @@
         </block>
         <block name="cntRoboticInboxInsecureGrey">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="414141" />
             <property name="TintColor" value="414141" />
@@ -287,7 +287,7 @@
         </block>
         <block name="cntRoboticInboxInsecureWhite">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="8C8C8C" />
             <property name="TintColor" value="8C8C8C" />
@@ -298,7 +298,7 @@
         </block>
         <block name="cntRoboticInboxInsecureArmyGreen">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="454B1B" />
             <property name="TintColor" value="454B1B" />
@@ -309,7 +309,7 @@
         </block>
         <block name="cntRoboticInboxInsecureCobalt">
             <property name="Extends" value="cntRoboticInboxInsecure" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
             <property name="CustomIcon" value="cntWasherOpen" />
             <property name="CustomIconTint" value="0047ab" />
             <property name="TintColor" value="0047ab" />
@@ -322,7 +322,7 @@
         <!-- *** ROBOTIC_INBOX_VARIANT_HELPER -->
         <block name="cntRoboticInboxVariantHelper">
             <property name="Extends" value="cntRoboticInbox" />
-            <property name="CreativeMode" value="Player" />
+            <property name="CreativeMode" value="None" />
 
             <property name="CustomIcon" value="cntWasherClosed" />
             <property name="CustomIconTint" value="007fff" />
